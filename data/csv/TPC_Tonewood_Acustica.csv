@@ -1,0 +1,255 @@
+species;density;Q factor;Young modulus;sound radiation coefficient
+;kg/m3;;Gpa;
+spruce;467,7;188;14,9;12,1
+spruce;432,8;188,9;13;12,7
+spruce;428,7;212;13,8;13,2
+spruce;415,7;177,2;11,7;12,8
+spruce;422,4;195,6;13,1;13,2
+spruce;428,9;191,6;13,1;12,9
+spruce;428,9;186;11,8;12,2
+spruce;424,5;186;12,9;13
+spruce;420,5;188,6;12,5;13
+spruce;458,4;180,9;13,3;11,7
+spruce;442,1;173;14,5;13
+spruce;427,4;175,1;11;11,9
+spruce;443,9;193,8;13,2;12,3
+spruce;476,4;211,4;15,8;12,1
+spruce;448,4;204,1;13,5;12,2
+spruce;398,4;177,2;10,8;13,1
+spruce;458,6;193,5;13,9;12
+spruce;438,6;166,1;13,2;12,5
+spruce;425,6;170,5;11,5;12,2
+spruce;425,6;181,5;14,4;13,6
+spruce;494,2;179,6;13,2;10,5
+spruce;431;158,7;11,6;12
+spruce;402,4;166,4;11,9;13,5
+spruce;402,4;125;9,5;12,1
+spruce;354,6;136,1;9,2;14,4
+spruce;425;161,9;11,9;12,4
+spruce;465,6;151,2;11,4;10,6
+spruce;338,4;138,3;8,3;14,7
+spruce;464,5;164,6;12,6;11,2
+spruce;420,2;162,7;11,9;12,7
+spruce;431,8;166,3;12,2;12,3
+spruce;499,3;174,1;16,8;11,6
+spruce;442,5;164,3;12,9;12,2
+spruce;390,7;136;8,7;12,1
+spruce;420,8;137,2;11,8;12,6
+spruce;379,8;162,4;10,2;13,7
+spruce;359,1;156,7;10;14,7
+spruce;415,5;154,6;10,8;12,2
+spruce;343,5;138,5;8,5;14,5
+spruce;415,6;163;11,1;12,4
+spruce;412,9;158;10,7;12,3
+spruce;416,2;149,5;11;12,4
+spruce;451;154,3;14,4;12,5
+spruce;349,3;135,5;8,9;14,5
+cedar;333,1;143,1;7,2;13,9
+cedar;362,2;133,6;6;11,2
+cedar;307,9;151,5;5,1;13,2
+cedar;298,7;125,7;4,9;13,5
+cedar;351,7;150,7;6,4;12,1
+cedar;367,9;120,5;5,4;10,4
+cedar;357,6;138,6;13,5;17,2
+cedar;332,6;111,3;5,3;12
+cedar;342,9;96,8;5,3;11,5
+cedar;373,8;204,8;8,2;12,5
+cedar;360,3;105,2;5,4;10,8
+cedar;358,4;111,8;5,9;11,3
+cedar;375,7;151,2;5,7;10,3
+cedar;363,1;93,9;6;11,2
+cedar;306,5;147,2;5,3;13,6
+cedar;295,6;94,3;4,1;12,6
+cedar;338,4;132,8;9;15,2
+cedar;367,8;215,2;7,4;12,2
+cedar;332;242,9;6,7;13,6
+cedar;359,3;216,5;4,2;9,5
+cedar;308,7;184;4,7;12,7
+cedar;334,5;180,9;6,4;13,1
+cedar;304,1;137,1;5,6;14,1
+cedar;341,3;214,6;7,9;14,1
+cedar;350,3;193,8;8;13,7
+cedar;306,6;194,6;5,4;13,6
+cedar;336,8;234,4;6,8;13,4
+cedar;311,7;222,9;5,3;13,2
+cedar;347,6;256,7;7,2;13,1
+cedar;313;212,9;5,1;13
+cedar;306,6;220,7;4,8;12,9
+cedar;334,9;196,8;6,3;12,9
+cedar;304,2;201,3;4,6;12,8
+cedar;310,3;233,8;4,9;12,8
+cedar;344,1;241,9;6,5;12,8
+cedar;337;244,5;6,1;12,7
+cedar;323,3;190,6;4,9;12
+moon spruce Alps;435,9;147,5;11,1;11,6
+moon spruce Alps;428,6;143,9;11,1;11,9
+moon spruce Alps;410,3;181;13,1;13,8
+moon spruce Alps;390;174,3;11,5;13,9
+moon spruce Alps;374,8;178,7;10,4;14
+moon spruce Alps;404,8;179;13,1;14
+moon spruce Alps;429,1;126,9;11,7;12,2
+moon spruce Alps;441,6;152,6;11,3;11,5
+moon spruce Alps;429,4;153,2;11,5;12,1
+moon spruce Alps;406,8;169,8;12,9;13,8
+moon spruce Alps;405,1;168,5;12,6;13,8
+moon spruce Alps;362,8;164;11;15,1
+moon spruce Alps;366,5;168,8;10;14,3
+moon spruce Alps;368,8;166,1;10,4;14,4
+moon spruce Alps;431,2;162,3;11,5;12
+moon spruce Alps;389,8;175,6;11,7;14
+moon spruce Alps;427,3;160,6;11,6;12,2
+moon spruce Alps;403,1;180,2;13;14,1
+moon spruce Alps;409,2;162,1;12,4;13,4
+moon spruce Alps;420,2;166;11,6;12,5
+moon spruce Alps;429,3;182,5;13,5;13,1
+moon spruce Alps;421,6;182,5;11,5;12,4
+moon spruce Alps;422,8;168,1;11,5;12,3
+moon spruce Alps;416,8;174,7;13,8;13,8
+moon spruce Alps;432,2;186,3;14;13,1
+adirondak spruce;516;169,9;16,7;11
+redwood;378,1;271;7,7;12
+adirondak spruce;447;139,2;11,7;11,4
+lutz spruce;412,1;169,3;13,7;14
+lutz spruce;411,5;140,8;13,4;13,8
+western red cedar;355,6;281,4;8,3;13,6
+sitka spruce;450,1;86,1;12,7;11,8
+sitka spruce;450,1;88,2;12,8;11,9
+Jura spruce;458,1;160;13,5;11,9
+sitka spruce;391,3;135,7;11,2;13,7
+engelman spruce;398;150;11,9;14
+engelman spruce;412,6;138,2;10,5;12,2
+Jura spruce;448,7;178,8;12,6;11,8
+Jura spruce;448,7;177,1;12,6;11,8
+Jura spruce;448,7;176,1;13,5;12,2
+Jura spruce;348,3;153,1;9,3;14,8
+Jura spruce;348,3;151,1;9,3;14,8
+Crelicam ebony;950,5;114,7;16,1;4,3
+Jura spruce;451,7;166,1;12,9;11,8
+European spruce;405,6;156,2;11,7;13,3
+European spruce;365,9;167,1;10,6;14,7
+European spruce;419,9;167,1;13,8;13,6
+French walnut;602,7;98,1;7,3;5,8
+Pao Santos;835,8;77;10,3;4,2
+Pao Santos;883,5;141,1;17,3;5
+Pao Santos;761,6;99,4;13,9;5,6
+Pao Santos;734,9;89,4;10;5
+Pao Santos;734,3;87,1;7,3;4,3
+Pao Santos;715,1;177,9;9,7;5,1
+Pao Santos;847,1;89,7;11,8;4,4
+Pao Santos;714,7;101,2;10,1;5,3
+Pao Santos;716,1;97,9;9,2;5
+Pao Santos;830,8;76,7;8,6;3,9
+Pao Santos;830,8;92,4;9,5;4,1
+Pao Santos;775,8;62,3;8,6;4,3
+Pao Santos;820,8;62,8;7,8;3,8
+Pao Santos;806,4;56,2;7,6;3,8
+Pao Santos;691,8;65,9;5,4;4
+Pao Santos;904,9;98,3;15,1;4,5
+Pao Santos;846,2;96,5;11,6;4,4
+Pao Santos;836;112;12,2;4,6
+Pao Santos;737,1;104,6;12,5;5,6
+Pao Santos;730,5;78,2;6,8;4,2
+Pao Santos;884,8;101,9;14,4;4,6
+Pao Santos;868,5;105,8;14,1;4,6
+Pao Santos;747,5;149,1;11,1;5,2
+Pao Santos;837,6;160,8;14,8;5
+MALAYSIAN BLACKWOOD;1041,8;200,6;29,6;5,1
+MALAYSIAN BLACKWOOD;1062,6;196,2;29,3;4,9
+MALAYSIAN BLACKWOOD;1041,8;185;28,2;5
+MALAYSIAN BLACKWOOD;1047,3;191,8;26,5;4,8
+MALAYSIAN BLACKWOOD;1118,2;209,7;27,6;4,4
+MALAYSIAN BLACKWOOD;1087,7;139,5;28,5;4,7
+MALAYSIAN BLACKWOOD;1076,6;198,2;27;4,6
+MALAYSIAN BLACKWOOD;1036;154,9;22,6;4,5
+MALAYSIAN BLACKWOOD;1069,8;153;24,9;4,5
+MALAYSIAN BLACKWOOD;1076,6;192,4;26,1;4,6
+MALAYSIAN BLACKWOOD;1065,5;142,9;41,6;5,9
+MALAYSIAN BLACKWOOD;1093;101,9;22,3;4,1
+MALAYSIAN BLACKWOOD;1064,2;122,4;21,1;4,2
+MALAYSIAN BLACKWOOD;1069,4;134,9;26,4;4,6
+MALAYSIAN BLACKWOOD;1099,5;176,5;27,7;4,6
+MALAYSIAN BLACKWOOD;1124,2;180;30,8;4,7
+MALAYSIAN BLACKWOOD;1082,9;173,7;26,4;4,6
+MALAYSIAN BLACKWOOD;1065,1;132,8;25,2;4,6
+MALAYSIAN BLACKWOOD;1095;156,1;24,6;4,3
+MALAYSIAN BLACKWOOD;1078;211,1;25,3;4,5
+MALAYSIAN BLACKWOOD;1087,5;143,1;20,4;4
+MALAYSIAN BLACKWOOD;1051,9;92,9;19,4;4,1
+MALAYSIAN BLACKWOOD;977,3;164,5;21,9;4,8
+NOGAL AMERICANO;478,5;176,9;9,4;9,3
+NOGAL AMERICANO;559,5;132,3;11,4;8,1
+NOGAL AMERICANO;545,3;98,9;10,3;8
+NOGAL AMERICANO;571,4;134,4;12,5;8,2
+NOGAL AMERICANO;572,2;68;10,2;7,4
+NOGAL AMERICANO;583,2;120,5;14,1;8,4
+NOGAL AMERICANO;540,5;121,9;11,1;8,4
+NOGAL AMERICANO;512,8;130,6;10,4;8,8
+NOGAL AMERICANO;547,9;114,9;11,4;8,3
+NOGAL AMERICANO;494,5;144,7;10,6;9,4
+NOGAL AMERICANO;587,5;80,1;12,2;7,8
+NOGAL AMERICANO;520,5;100,3;10,2;8,5
+NOGAL AMERICANO;565,6;95,8;12,4;8,3
+NOGAL AMERICANO;514,5;151,7;12,5;9,6
+NOGAL AMERICANO;565,5;82,1;10,8;7,7
+NOGAL AMERICANO;542,6;124,6;11,6;8,5
+NOGAL AMERICANO;612,6;80,8;14,6;8
+NOGAL AMERICANO;551;114,4;13,3;8,9
+NOGAL AMERICANO;551,9;70,3;10,7;8
+NOGAL AMERICANO;595,8;90,3;12,5;7,7
+Cedar 30 years natural aging;313;212,9;5,1;13
+Cedar 30 years natural aging;309,4;222;5,2;13,2
+Cedar 30 years natural aging;278,7;224,7;4,4;14,3
+Cedar 30 years natural aging;316,5;214,9;5,2;12,9
+Cedar 30 years natural aging;305,9;222,2;5,2;13,5
+Cedar 30 years natural aging;305,4;182;5,2;13,5
+Cedar 30 years natural aging;303,2;200;6;14,7
+Cedar 30 years natural aging;296,9;236,4;5,1;13,9
+Cedar 30 years natural aging;321,2;188,2;5,8;13,3
+Cedar 30 years natural aging;292,2;211,3;5,1;14,3
+Cedar 30 years natural aging;319,6;242,6;6,4;14
+Cedar 30 years natural aging;288,6;165,2;4,9;14,2
+Cedar 30 years natural aging;319,4;237,5;5,8;13,3
+Cedar 30 years natural aging;313,5;204,8;6,7;14,7
+Cedar 30 years natural aging;295,9;224,8;6,4;15,7
+Cedar 30 years natural aging;328,6;211,2;6,7;13,8
+Cedar 30 years natural aging;334,8;214,1;7,1;13,7
+Cedar 30 years natural aging;343,7;238,6;8;14
+Cedar 30 years natural aging;315,2;179,3;8,2;16,2
+Cedar 30 years natural aging;329,7;217;7,5;14,4
+Cedar 30 years natural aging;310,2;225,8;7,2;15,6
+Cedar 30 years natural aging;296,4;217;5,9;15,1
+Cedar 30 years natural aging;306,5;232,9;6,5;15
+Cedar 30 years natural aging;304,3;238,8;6,7;15,4
+Cedar 30 years natural aging;329,5;216,8;6,5;13,4
+Cedar 30 years natural aging;309,2;182,7;5,1;13,1
+Cedar 30 years natural aging;325,9;232;5,5;12,7
+Cedar 30 years natural aging;307,6;234;5,3;13,5
+Cedar 30 years natural aging;312,4;240,2;5,4;13,3
+Cedar 30 years natural aging;316,3;217,8;5,9;13,7
+Cedar 30 years natural aging;302,7;213,3;6,6;15,4
+Cedar 30 years natural aging;334,1;240,9;6,4;13,1
+Cedar 30 years natural aging;310,4;214,7;5,5;13,5
+Cedar 30 years natural aging;325;233,1;6,4;13,6
+Cedar 30 years natural aging;318,9;227,4;6,1;13,8
+Cedar 30 years natural aging;289,6;203,5;5;14,3
+Cedar 30 years natural aging;288,5;240,4;4,9;14,3
+Cedar 30 years natural aging;297,9;220;6,4;15,6
+Cedar 30 years natural aging;298,4;207,7;5,1;13,9
+Cedar 30 years natural aging;303,3;199,9;5,1;13,5
+Cedar 30 years natural aging;324,5;222,7;7,2;14,5
+Cedar 30 years natural aging;337,8;211;8;14,4
+Cedar 30 years natural aging;346;223,9;7,9;13,8
+Cedar 30 years natural aging;348;220,3;7,8;13,6
+Cedar 30 years natural aging;356,1;225,3;8,1;13,4
+Cedar 30 years natural aging;294,9;172,4;6;15,3
+Cedar 30 years natural aging;300,3;200,5;6,2;15,2
+Cedar 30 years natural aging;308,2;190;6,8;15,3
+Cedar 30 years natural aging;303,9;218,8;6,5;15,2
+Cedar 30 years natural aging;304,3;208;6,2;14,8
+mahoghany;530;150;10,2;8
+mahoghany;470;170;9,2;10
+maple;530;120;6,7;7
+maple;600;110;5,4;5
+exotic ebony;930;190;12;4
+eucalyptus;700;90;17;6,5
+ash;610;150;9,9;7

@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iulius Guitars - Bridge & Saddle Force Calculator</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- Base CSS (Unchanged) --- */
+        #iulius-bridge-force-sim {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* bg-gray-100 */
+            color: #1f2937; /* text-gray-800 */
+        }
+
+        #iulius-bridge-force-sim *,
+        #iulius-bridge-force-sim *::before,
+        #iulius-bridge-force-sim *::after {
+            box-sizing: border-box;
+        }
+
+        #iulius-bridge-force-sim .container {
+            width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+            padding: 1rem; /* p-4 */
+            max-width: 1200px;  
+        }
+        
+        @media (min-width: 640px) {
+            #iulius-bridge-force-sim .container { padding: 1.5rem; }
+        }
+        @media (min-width: 1024px) {
+            #iulius-bridge-force-sim .container { padding: 2rem; }
+        }
+
+        #iulius-bridge-force-sim h1 { font-size: 1.875rem; line-height: 2.25rem; font-weight: 700; color: #111827; }
+        #iulius-bridge-force-sim h2 { font-size: 1.5rem; line-height: 2rem; font-weight: 700; color: #111827; }
+        #iulius-bridge-force-sim h3 { font-size: 1.25rem; line-height: 1.75rem; font-weight: 600; color: #1f2937; }  
+        #iulius-bridge-force-sim h4 { font-size: 0.875rem; line-height: 1.25rem; font-weight: 500; color: #374151; }  
+
+        @media (min-width: 768px) {
+            #iulius-bridge-force-sim h1 { font-size: 2.25rem; line-height: 2.5rem; }
+            #iulius-bridge-force-sim .md\:flex-row { flex-direction: row; }
+        }
+
+        #iulius-bridge-force-sim .text-center { text-align: center; }
+        #iulius-bridge-force-sim .text-left { text-align: left; }
+        #iulius-bridge-force-sim .mb-6 { margin-bottom: 1.5rem; }
+        #iulius-bridge-force-sim .mb-4 { margin-bottom: 1rem; }
+        #iulius-bridge-force-sim .mb-2 { margin-bottom: 0.5rem; }  
+        #iulius-bridge-force-sim .mt-1 { margin-top: 0.25rem; }
+        #iulius-bridge-force-sim .mt-2 { margin-top: 0.5rem; }
+        #iulius-bridge-force-sim .mt-4 { margin-top: 1rem; }
+        #iulius-bridge-force-sim .mt-6 { margin-top: 1.5rem; }
+        
+        #iulius-bridge-force-sim .space-y-12 > :not([hidden]) ~ :not([hidden]) { margin-top: 3rem; }
+        #iulius-bridge-force-sim .space-y-6 > :not([hidden]) ~ :not([hidden]) { margin-top: 1.5rem; }
+        #iulius-bridge-force-sim .space-y-4 > :not([hidden]) ~ :not([hidden]) { margin-top: 1rem; }
+        
+        #iulius-bridge-force-sim .w-full { width: 100%; }
+        #iulius-bridge-force-sim .h-full { height: 100%; }
+        #iulius-bridge-force-sim .h-2 { height: 0.5rem; }
+        #iulius-bridge-force-sim .p-6 { padding: 1.5rem; }
+        #iulius-bridge-force-sim .p-4 { padding: 1rem; }
+        #iulius-bridge-force-sim .pb-4 { padding-bottom: 1rem; }
+        #iulius-bridge-force-sim .pt-2 { padding-top: 0.5rem; }
+
+        #iulius-bridge-force-sim .bg-white { background-color: #ffffff; }
+        #iulius-bridge-force-sim .bg-gray-50 { background-color: #f9fafb; }
+        #iulius-bridge-force-sim .bg-gray-100 { background-color: #f3f4f6; }
+        #iulius-bridge-force-sim .bg-gray-200 { background-color: #e5e7eb; }
+        #iulius-bridge-force-sim .bg-blue-50 { background-color: #eff6ff; }
+        #iulius-bridge-force-sim .bg-emerald-50 { background-color: #ecfdf5; }
+
+        #iulius-bridge-force-sim .rounded-2xl { border-radius: 1rem; }
+        #iulius-bridge-force-sim .rounded-xl { border-radius: 0.75rem; }
+        #iulius-bridge-force-sim .rounded-lg { border-radius: 0.5rem; }
+        
+        #iulius-bridge-force-sim .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05); }
+
+        #iulius-bridge-force-sim .border-b { border-bottom-width: 1px; }
+        #iulius-bridge-force-sim .border-gray-200 { border-color: #e5e7eb; }
+        
+        #iulius-bridge-force-sim .grid { display: grid; }
+        #iulius-bridge-force-sim .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+        
+        #iulius-bridge-force-sim .gap-6 { gap: 1.5rem; }
+        #iulius-bridge-force-sim .gap-4 { gap: 1rem; }
+
+        @media (min-width: 768px) {
+            #iulius-bridge-force-sim .md\:p-8 { padding: 2rem; }
+            #iulius-bridge-force-sim .md\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            #iulius-bridge-force-sim .md\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        }
+
+        @media (min-width: 1024px) {
+            #iulius-bridge-force-sim .lg\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+            #iulius-bridge-force-sim .lg\:col-span-1 { grid-column: span 1 / span 1; }
+            #iulius-bridge-force-sim .lg\:col-span-2 { grid-column: span 2 / span 2; }
+        }
+
+        #iulius-bridge-force-sim .self-start { align-self: flex-start; }
+        #iulius-bridge-force-sim .flex { display: flex; }
+        #iulius-bridge-force-sim .flex-row { flex-direction: row; }  
+        #iulius-bridge-force-sim .flex-col { flex-direction: column; }
+        #iulius-bridge-force-sim .flex-1 { flex: 1 1 0%; }  
+        #iulius-bridge-force-sim .min-w-0 { min-width: 0; }  
+        #iulius-bridge-force-sim .items-center { align-items: center; }
+        #iulius-bridge-force-sim .items-baseline { align-items: baseline; }
+        #iulius-bridge-force-sim .justify-center { justify-content: center; }
+        #iulius-bridge-force-sim .justify-between { justify-content: space-between; }
+
+        #iulius-bridge-force-sim .font-semibold { font-weight: 600; }
+        #iulius-bridge-force-sim .font-medium { font-weight: 500; }
+
+        #iulius-bridge-force-sim .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+        #iulius-bridge-force-sim .text-xs { font-size: 0.75rem; line-height: 1rem; }
+        #iulius-bridge-force-sim .text-gray-500 { color: #6b7280; }
+        #iulius-bridge-force-sim .text-gray-700 { color: #374151; }
+        #iulius-bridge-force-sim .text-blue-600 { color: #2563eb; }
+        #iulius-bridge-force-sim .text-blue-700 { color: #1d4ed8; }
+        #iulius-bridge-force-sim .text-blue-800 { color: #1e40af; }
+        #iulius-bridge-force-sim .text-emerald-800 { color: #065f46; }
+
+        /* --- Slider Styles (Unchanged) --- */
+        #iulius-bridge-force-sim .appearance-none { appearance: none; }
+        #iulius-bridge-force-sim .cursor-pointer { cursor: pointer; }
+        #iulius-bridge-force-sim .slider-thumb::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 20px; height: 20px; background: #3b82f6; cursor: pointer; border-radius: 9999px; transition: background-color 0.2s; }
+        #iulius-bridge-force-sim .slider-thumb::-moz-range-thumb { width: 20px; height: 20px; background: #3b82f6; cursor: pointer; border-radius: 9999px; border: none; transition: background-color 0.2s; }
+        #iulius-bridge-force-sim .slider-thumb:disabled::-webkit-slider-thumb { background: #9ca3af; }
+        #iulius-bridge-force-sim .slider-thumb:disabled::-moz-range-thumb { background: #9ca3af; }
+
+        
+        /* --- Result Card Styles (from 4-DOF App) --- */
+        #iulius-bridge-force-sim .result-card { 
+            background-color: #eff6ff; /* bg-blue-50 */
+            border-radius: 0.75rem; /* rounded-xl */
+            padding: 1rem; /* p-4 */
+        }
+        #iulius-bridge-force-sim .result-label { 
+            font-size: 0.875rem; /* text-sm */
+            font-weight: 500; /* font-medium */
+            color: #1e40af; /* text-blue-800 */
+            display: block; /* Make it a block for layout */
+            line-height: 1.3;
+        }
+        #iulius-bridge-force-sim .result-value { 
+            font-size: 1.5rem; /* text-2xl */
+            font-weight: 700; /* font-bold */
+            color: #1d4ed8; /* text-blue-700 */
+            line-height: 1.25; /* leading-tight */
+        }
+        #iulius-bridge-force-sim .result-unit { 
+            font-size: 0.875rem; /* text-sm */
+            font-weight: 500; /* font-medium */
+            color: #1e40af; /* text-blue-800 */
+            margin-left: 0.375rem; /* ml-1.5 */
+        }
+        #iulius-bridge-force-sim .result-flex {
+            display: flex;
+            align-items: baseline;
+            padding-top: 0.5rem; /* pt-2 */
+        }
+        /* --- END: Result Card Styles --- */
+
+
+        /* --- Canvas Container (Unchanged) --- */
+        #iulius-bridge-force-sim .canvas-container {
+            position: relative;  
+            width: 100%;
+            background-color: #f9fafb;
+            border-radius: 0.75rem;
+            padding: 1rem;  
+            padding-top: 3rem; /* Extra padding for the title */
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 250px;  
+            height: 100%;
+        }
+        
+        #iulius-bridge-force-sim canvas {  
+            display: block;  
+            width: 100%;  
+            height: auto;  
+        }
+
+        /* --- Logo CSS (Unchanged) --- */
+        #iulius-bridge-force-sim .canvas-logo {
+            position: absolute;
+            bottom: 15px;  
+            right: 15px;  
+            width: 50px;  
+            height: auto;
+            opacity: 0.2;
+            pointer-events: none;  
+            z-index: 10;  
+        }
+
+        /* --- Canvas/Panel Title CSS (Unchanged) --- */
+        #iulius-bridge-force-sim .canvas-container h3,
+        #iulius-bridge-force-sim .reference-container h3,
+        #iulius-bridge-force-sim .physics-box h3 {
+            position: absolute;
+            top: 1rem;  
+            left: 1rem;  
+            right: 1rem;  
+            text-align: center;  
+            z-index: 5;  
+            margin: 0;
+            font-size: 1.25rem;  
+            line-height: 1.75rem;
+            font-weight: 600;
+            color: #1f2937;  
+        }
+        
+        /* --- Physics Explanation Box (REMOVED) --- */
+
+        /* --- Footer (Unchanged) --- */
+        #iulius-sim-footer { text-align: center; padding: 1rem; margin-top: 2rem; color: #6b7280; font-size: 0.875rem; line-height: 1.25rem; font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body>
+    
+    <div id="iulius-bridge-force-sim">
+        <div class="container">
+            <div class="space-y-12">
+                
+                <section id="bridge-force-calculator" class="w-full bg-white rounded-2xl shadow-lg p-6 md:p-8">
+                    
+                    <div class="text-left mb-6 pb-4 border-b border-gray-200">
+                        <h2>Bridge & Saddle Force Calculator</h2>
+                        <p class="text-gray-500 mt-1">Calculate the static and dynamic forces applied to the soundboard by the strings.</p>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        
+                        <div class="lg:col-span-1 space-y-6 self-start">
+                            <div class="bg-gray-50 rounded-xl p-6 space-y-4">
+                                <h3>String & Bridge Geometry</h3>
+                                <div>
+                                    <label class="flex justify-between font-medium text-gray-700">
+                                        <span>Total String Tension</span>
+                                        <span id="total-tension-value" class="font-semibold text-blue-600">750 N</span>
+                                    </label>
+                                    <input type="range" id="total-tension" min="300" max="1200" step="10" value="750" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb mt-2">
+                                </div>
+                                <div>
+                                    <label class="flex justify-between font-medium text-gray-700">
+                                        <span>Saddle Height (D1)</span>
+                                        <span id="saddle-height-value" class="font-semibold text-blue-600">14.0 mm</span>
+                                    </label>
+                                    <input type="range" id="saddle-height" min="5" max="16" step="0.1" value="14.0" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb mt-2">
+                                </div>
+                                <div>
+                                    <label class="flex justify-between font-medium text-gray-700">
+                                        <span>Pin-Saddle Distance (D2)</span>
+                                        <span id="pin-distance-value" class="font-semibold text-blue-600">15.0 mm</span>
+                                    </label>
+                                    <input type="range" id="pin-distance" min="3" max="30" step="0.5" value="15.0" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb mt-2">
+                                </div>
+                                <div>
+                                    <label class="flex justify-between font-medium text-gray-700">
+                                        <span>Pin Height Drop (D3)</span>
+                                        <span id="pin-height-diff-value" class="font-semibold text-blue-600">10.0 mm</span>
+                                    </label>
+                                    <input type="range" id="pin-height-diff" min="1" max="15" step="0.1" value="5.0" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb mt-2">
+                                </div>
+                            </div>
+                            
+                            <div class="bg-gray-50 rounded-xl p-6 space-y-4">
+                                <h3>Pluck Dynamics (Est.)</h3>
+                                <div>
+                                    <label class="flex justify-between font-medium text-gray-700">
+                                        <span>Scale Length</span>
+                                        <span id="scale-length-value" class="font-semibold text-blue-600">650 mm</span>
+                                    </label>
+                                    <input type="range" id="scale-length" min="200" max="1000" step="1" value="650" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb mt-2">
+                                </div>
+                                <div>
+                                    <label class="flex justify-between font-medium text-gray-700">
+                                        <span>Pluck Position (x/L)</span>
+                                        <span id="pluck-position-value" class="font-semibold text-blue-600">0.25</span>
+                                    </label>
+                                    <input type="range" id="pluck-position" min="0.1" max="0.5" step="0.01" value="0.25" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb mt-2">
+                                </div>
+                                <div>
+                                    <label class="flex justify-between font-medium text-gray-700">
+                                        <span>Pluck Displacement</span>
+                                        <span id="pluck-displacement-value" class="font-semibold text-blue-600">5.0 mm</span>
+                                    </label>
+                                    <input type="range" id="pluck-displacement" min="1" max="10" step="0.1" value="5" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb mt-2">
+                                </div>
+                                <div>
+                                    <label class="flex justify-between font-medium text-gray-700">
+                                        <span>String Longitudinal Stiffness</span>
+                                        <span id="axial-stiffness-value" class="font-semibold text-blue-600">8500 N</span>
+                                    </label>
+                                    <input type="range" id="axial-stiffness" min="5000" max="15000" step="100" value="8500" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb mt-2">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="lg:col-span-2 space-y-6 self-start">
+                            
+                            <div class="grid grid-cols-1 gap-6">
+                                <div class="canvas-container" style="min-height: 300px;">
+                                      <h3>Bridge Force Diagram</h3> 
+                                    <canvas id="bridge-force-canvas"></canvas>
+                                    <img class="canvas-logo" src="https://www.iuliusguitars.com/wp-content/uploads/2025/10/IuliusBlack.png" alt="Iulius Guitars Logo">
+                                </div>
+
+                                <div class="bg-gray-100 rounded-xl p-6">
+                                    
+                                    <h3 class="mb-4">
+                                        Static forces
+                                        <span class="text-sm font-medium text-gray-500" style="margin-left: 0.5rem; vertical-align: middle;">(Full set of strings)</span>
+                                    </h3>
+                                    
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        
+                                        <div class="result-card">
+                                            <label class="result-label">Static Vertical Force (F_v)</label>
+                                            <div class="result-flex">
+                                                <span id="result-f-vertical" class="result-value">...</span>
+                                                <span class="result-unit">N</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="result-card">
+                                            <label class="result-label">Static Torque (τ)</label>
+                                            <div class="result-flex">
+                                                <span id="result-torque" class="result-value">...</span>
+                                                <span class="result-unit">N·m</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="result-card">
+                                            <label class="result-label">Break Angle (α1)</label>
+                                            <div class="result-flex">
+                                                <span id="result-break-angle" class="result-value">...</span>
+                                                <span class="result-unit">deg</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                   <h3 class="mt-6 mb-4">
+                                        Dynamic forces
+                                        <span class="text-sm font-medium text-gray-500" style="margin-left: 0.5rem; vertical-align: middle;">(Single string estimate)</span>
+                                    </h3>
+                                    
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4"> 
+                                        
+                                        <div class="result-card">
+                                            <label class="result-label">Peak Transversal Force</label>
+                                            <div class="result-flex">
+                                                <span id="result-f-transversal" class="result-value">...</span>
+                                                <span class="result-unit">N</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="result-card">
+                                            <label class="result-label">Peak Longitudinal Force</label>
+                                            <div class="result-flex">
+                                                <span id="result-f-longitudinal" class="result-value">...</span>
+                                                <span class="result-unit">N</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                                </div>
+                            
+                        </div>
+                    </div>
+                </section>
+                
+            </div>
+            
+            <div id="iulius-sim-footer">
+                © Iulius Guitars – Giuliano Nicoletti. These tools are shared for your personal growth. If you'd like to share them, just ask first.
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+    (() => {
+        const simSection = document.getElementById('bridge-force-calculator');
+        if (!simSection) return;
+
+        // --- Get All Elements (UPDATED) ---
+        const tensionEl = simSection.querySelector('#total-tension');
+        const heightEl = simSection.querySelector('#saddle-height');
+        const pinDistEl = simSection.querySelector('#pin-distance');
+        const pinHeightEl = simSection.querySelector('#pin-height-diff');
+        const scaleEl = simSection.querySelector('#scale-length');
+        const pluckPosEl = simSection.querySelector('#pluck-position');
+        const pluckDispEl = simSection.querySelector('#pluck-displacement');
+        const axialStiffnessEl = simSection.querySelector('#axial-stiffness'); 
+        
+        const tensionValueEl = simSection.querySelector('#total-tension-value');
+        const heightValueEl = simSection.querySelector('#saddle-height-value');
+        const pinDistValueEl = simSection.querySelector('#pin-distance-value');
+        const pinHeightValueEl = simSection.querySelector('#pin-height-diff-value');
+        const scaleValueEl = simSection.querySelector('#scale-length-value');
+        const pluckPosValueEl = simSection.querySelector('#pluck-position-value');
+        const pluckDispValueEl = simSection.querySelector('#pluck-displacement-value');
+        const axialStiffnessValueEl = simSection.querySelector('#axial-stiffness-value'); 
+        
+        const fVerticalEl = simSection.querySelector('#result-f-vertical');
+        const breakAngleEl = simSection.querySelector('#result-break-angle');
+        const torqueEl = simSection.querySelector('#result-torque');
+        const fTransEl = simSection.querySelector('#result-f-transversal');
+        const fLongEl = simSection.querySelector('#result-f-longitudinal');
+        
+        const canvas = simSection.querySelector('#bridge-force-canvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        
+        // --- *** UPDATED PHYSICS CALCULATION *** ---
+        function calculateAndUpdate() {
+            // --- 1. Get Values (UPDATED) ---
+            const T_total = parseFloat(tensionEl.value);
+            const D1_mm = parseFloat(heightEl.value); // Saddle Height (h_s)
+            const D2_mm = parseFloat(pinDistEl.value);
+            const D3_mm = parseFloat(pinHeightEl.value);
+            const L_scale_mm = parseFloat(scaleEl.value);
+            const x_ratio = parseFloat(pluckPosEl.value); // Pluck position as ratio from saddle
+            const y_pluck_mm = parseFloat(pluckDispEl.value);
+            const EA_steel_string = parseFloat(axialStiffnessEl.value); 
+
+            // --- 2. Update Labels (UPDATED) ---
+            tensionValueEl.textContent = `${T_total.toFixed(0)} N`;
+            heightValueEl.textContent = `${D1_mm.toFixed(1)} mm`;
+            pinDistValueEl.textContent = `${D2_mm.toFixed(1)} mm`;
+            pinHeightValueEl.textContent = `${D3_mm.toFixed(1)} mm`;
+            scaleValueEl.textContent = `${L_scale_mm.toFixed(0)} mm`;
+            pluckPosValueEl.textContent = `${x_ratio.toFixed(2)}`;
+            pluckDispValueEl.textContent = `${y_pluck_mm.toFixed(1)} mm`;
+            axialStiffnessValueEl.textContent = `${EA_steel_string.toFixed(0)} N`; 
+
+            // --- 3. Convert to SI Units ---
+            const D1_m = D1_mm / 1000.0;
+            const L_scale_m = L_scale_mm / 1000.0;
+            const y_pluck_m = y_pluck_mm / 1000.0; // Pluck amplitude in meters
+            
+            // --- 4. Static Calcs ---
+           const alpha_rad = Math.atan((D1_mm - D3_mm) / D2_mm);
+            const alpha_deg = alpha_rad * (180.0 / Math.PI);
+            const F_v = T_total * Math.sin(alpha_rad);
+           // Improved torque including anchor geometry
+// Horizontal component acting at saddle height:
+const M_horiz = (T_total * Math.cos(alpha_rad)) * D1_m;
+
+// Vertical force couple from saddle <-> anchor distance:
+const F_saddle_down = T_total * Math.sin(alpha_rad);
+const D2_m = D2_mm / 1000.0;
+const M_couple = F_saddle_down * D2_m;
+
+// Total rocking moment on bridge:
+const Torque = M_horiz + M_couple;
+            const F_h_net = T_total * (1 - Math.cos(alpha_rad)); // Net horizontal pull at saddle
+
+            // --- 5. Dynamic Calcs (UPDATED) ---
+            const x_m = L_scale_m * x_ratio; 
+            const L_minus_x_m = L_scale_m - x_m; 
+
+            // Peak Transversal Force (F_trans) - Occurs at f0
+           const F_trans_peak = T_total * (y_pluck_m / L_minus_x_m);
+            
+            // Peak Longitudinal Force (F_long) - Occurs at 2*f0
+            const delta_L = 0.5 * (y_pluck_m**2) * (1/x_m + 1/L_minus_x_m);
+            const F_long_peak = EA_steel_string * (delta_L / L_scale_m); 
+
+
+            // --- 6. Update Results UI ---
+            fVerticalEl.textContent = F_v.toFixed(2);
+            breakAngleEl.textContent = alpha_deg.toFixed(2);
+            torqueEl.textContent = Torque.toFixed(2);
+            fTransEl.textContent = F_trans_peak.toFixed(2);
+            fLongEl.textContent = F_long_peak.toFixed(2);
+
+            // --- 7. Redraw Canvas ---
+            drawBridgeForces(D1_mm, D2_mm, D3_mm, alpha_deg, F_v, F_h_net, Torque);
+        }
+        
+        // --- *** Draw Function (Unchanged) ***
+        function drawBridgeForces(D1_mm, D2_mm, D3_mm, alpha_deg, F_v, F_h_net, Tq) {
+            const w = canvas.clientWidth;
+            if (w <= 0) return;
+            const h = Math.min(w * 0.7, 400);  
+            canvas.width = w;
+            canvas.height = h;
+            canvas.style.height = `${h}px`;
+            ctx.clearRect(0, 0, w, h);
+
+            const soundboardThick_mm = 3.0;
+            const bridgeMaxHeight_mm = 9.0;
+            const saddleWidth_mm = 5.0;
+            const bridgeFrontOffset = 15; 
+            const bridgePinTaper =35;  
+
+            const saddle_x = 0;
+            const saddle_y = 0; 
+            const sb_top_y = D1_mm;
+            const sb_bot_y = sb_top_y + soundboardThick_mm;
+            const bridge_wood_top_y = sb_top_y - bridgeMaxHeight_mm;
+            const pin_x = D2_mm;
+            const pin_y = D1_mm - D3_mm;
+
+            const min_x = saddle_x - bridgeFrontOffset - 60;  
+            const max_x = pin_x + bridgePinTaper + 60;  
+            const min_y = saddle_y - 80; 
+            const max_y = sb_bot_y + 80;  
+            const content_w_mm = max_x - min_x;
+            const content_h_mm = max_y - min_y;
+
+            const canvas_pad = 20;  
+            const verticalExaggeration = 2.0;  
+
+            const scale_x = (w - canvas_pad*2) / content_w_mm;
+            const scale_y = (h - canvas_pad*2) / content_h_mm;
+            const scale = Math.min(scale_x, scale_y);  
+
+            const final_scale_x = scale;
+            const final_scale_y = scale * verticalExaggeration;
+
+            const ox = (w - (content_w_mm * final_scale_x)) / 2 - (min_x * final_scale_x);
+            const oy = (h - (content_h_mm * final_scale_y)) / 2 - (min_y * final_scale_y);
+
+            ctx.save();
+            ctx.translate(ox, oy);
+            
+            const scaled_saddle_x = saddle_x * final_scale_x;
+            const scaled_saddle_y = saddle_y * final_scale_y;
+            const scaled_sb_top_y = sb_top_y * final_scale_y;
+            const scaled_sb_bot_y = sb_bot_y * final_scale_y;
+            const scaled_bridge_wood_top_y = bridge_wood_top_y * final_scale_y;
+            const scaled_pin_x = pin_x * final_scale_x;
+            const scaled_pin_y = pin_y * final_scale_y;
+            const scaled_bridgeFrontOffset = bridgeFrontOffset * final_scale_x;
+            const scaled_bridgePinTaper = bridgePinTaper * final_scale_x;
+            const scaled_saddleWidth_mm = saddleWidth_mm * final_scale_x;
+            const scaled_soundboardThick_mm = soundboardThick_mm * final_scale_y;
+
+            const lineDash = [5, 3];  
+            const arrowHead = 6;  
+            const textMargin = 8;  
+            ctx.font = `600 14px 'Inter', sans-serif`;  
+
+            const mainLineWidth = 2;
+            const thinLineWidth = 1.5;
+
+            // Soundboard
+            ctx.fillStyle = '#eff6ff'; ctx.strokeStyle = '#2563eb'; ctx.lineWidth = mainLineWidth;
+            ctx.fillRect(scaled_saddle_x - scaled_bridgeFrontOffset - 60 * final_scale_x, scaled_sb_top_y, (content_w_mm + 40) * final_scale_x, scaled_soundboardThick_mm);
+            ctx.strokeRect(scaled_saddle_x - scaled_bridgeFrontOffset - 60 * final_scale_x, scaled_sb_top_y, (content_w_mm + 40) * final_scale_x, scaled_soundboardThick_mm);
+
+            // Bridge
+            ctx.fillStyle = '#fdf2e9'; ctx.strokeStyle = '#c2410c'; ctx.lineWidth = mainLineWidth;
+            ctx.beginPath();
+            ctx.moveTo(scaled_saddle_x - scaled_bridgeFrontOffset, scaled_sb_top_y);
+            ctx.lineTo(scaled_saddle_x - scaled_bridgeFrontOffset, scaled_bridge_wood_top_y);
+            ctx.lineTo(scaled_saddle_x - scaled_saddleWidth_mm / 2, scaled_bridge_wood_top_y);
+            ctx.lineTo(scaled_saddle_x - scaled_saddleWidth_mm / 2, scaled_sb_top_y);  
+            ctx.lineTo(scaled_saddle_x + scaled_saddleWidth_mm / 2, scaled_sb_top_y);
+            ctx.lineTo(scaled_saddle_x + scaled_saddleWidth_mm / 2, scaled_bridge_wood_top_y);
+            ctx.lineTo(scaled_pin_x, scaled_bridge_wood_top_y + (2 * final_scale_y));  
+            ctx.lineTo(scaled_pin_x + scaled_bridgePinTaper, scaled_sb_top_y);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            // Saddle
+            ctx.fillStyle = '#ffffff'; ctx.strokeStyle = '#374151'; ctx.lineWidth = thinLineWidth;
+            ctx.fillRect(scaled_saddle_x - scaled_saddleWidth_mm / 2, scaled_saddle_y, scaled_saddleWidth_mm, scaled_bridge_wood_top_y - scaled_saddle_y);
+            ctx.strokeRect(scaled_saddle_x - scaled_saddleWidth_mm / 2, scaled_saddle_y, scaled_saddleWidth_mm, scaled_bridge_wood_top_y - scaled_saddle_y);
+
+            // Pin
+            ctx.beginPath(); ctx.arc(scaled_pin_x, scaled_pin_y, 3 * scale, 0, 2 * Math.PI); ctx.fillStyle = '#374151'; ctx.fill();
+
+            // String
+            ctx.strokeStyle = '#ef4444'; ctx.lineWidth = mainLineWidth;
+            ctx.beginPath();
+            ctx.moveTo(scaled_pin_x, scaled_pin_y);
+            ctx.lineTo(scaled_saddle_x, scaled_saddle_y);
+            ctx.lineTo(scaled_saddle_x - (w / 2), scaled_saddle_y);  
+            ctx.stroke();
+            
+            // Dimensions
+            ctx.strokeStyle = '#374151'; ctx.fillStyle = '#1f2937'; ctx.lineWidth = thinLineWidth;
+            
+            ctx.textAlign = 'right';
+            const d1_x_px = scaled_saddle_x - scaled_bridgeFrontOffset - 50;  
+            drawVerticalDimPx(ctx, d1_x_px, scaled_saddle_y, scaled_sb_top_y, `D1 = ${D1_mm.toFixed(1)} mm`, lineDash, arrowHead, textMargin);
+
+            ctx.textAlign = 'center';
+            const d2_y_px = scaled_sb_bot_y + 70;  
+            drawHorizontalDimPx(ctx, d2_y_px, scaled_saddle_x, scaled_pin_x, `D2 = ${D2_mm.toFixed(1)} mm`, lineDash, arrowHead, textMargin);
+            
+            ctx.textAlign = 'left';
+            const d3_x_px = scaled_pin_x + scaled_bridgePinTaper + 50;  
+            drawVerticalDimPx(ctx, d3_x_px, scaled_sb_top_y, scaled_pin_y, `D3 = ${D3_mm.toFixed(1)} mm`, lineDash, arrowHead, textMargin);
+            
+            ctx.textAlign = 'left';
+            const angle_radius_px = 25;  
+            ctx.beginPath(); ctx.setLineDash(lineDash);
+            ctx.moveTo(scaled_saddle_x, scaled_saddle_y); ctx.lineTo(scaled_saddle_x + 50, scaled_saddle_y);
+            ctx.setLineDash([]); ctx.beginPath();
+            ctx.arc(scaled_saddle_x, scaled_saddle_y, angle_radius_px, 0, alpha_deg * Math.PI / 180, false);
+            ctx.stroke();
+            ctx.fillText(`α1 = ${alpha_deg.toFixed(1)}°`, scaled_saddle_x + angle_radius_px + textMargin, scaled_saddle_y + angle_radius_px / 2);
+
+            // Forces
+            const forceArrowLen = 30;  
+            ctx.lineWidth = mainLineWidth;
+
+            ctx.strokeStyle = '#16a34a'; ctx.fillStyle = '#16a34a';  
+            ctx.textAlign = 'center';
+            const fv_x = scaled_saddle_x + scaled_pin_x / 3;  
+            const fv_y_start = scaled_sb_top_y;
+            const fv_y_end = fv_y_start + forceArrowLen + 10;  
+            drawArrow(ctx, fv_x, fv_y_start, fv_x, fv_y_end, arrowHead);
+            ctx.fillText(`F_v = ${F_v.toFixed(2)} N`, fv_x, fv_y_end + textMargin + 5);
+            
+            ctx.strokeStyle = '#9333ea'; ctx.fillStyle = '#9333ea';  
+            ctx.textAlign = 'center';
+            const tq_y = d2_y_px + 40;  
+            const tq_radius = 10;
+            ctx.beginPath();
+            ctx.arc(scaled_saddle_x, tq_y, tq_radius, Math.PI * 1.8, Math.PI * 0.2, true);
+            drawArrow(ctx, scaled_saddle_x - tq_radius, tq_y, scaled_saddle_x - tq_radius - 1, tq_y, arrowHead);  
+            ctx.stroke();
+            ctx.fillText(`τ (Torque ${Tq.toFixed(2)} N·m)`, scaled_saddle_x, tq_y + tq_radius + textMargin + 5);
+            
+            ctx.fillStyle = '#1f2937'; ctx.strokeStyle = '#1f2937';  
+            ctx.textAlign = 'center';
+            const ftrans_x = scaled_saddle_x + 30;
+            const ftrans_y_start = scaled_saddle_y - 65; 
+            const ftrans_y_end = ftrans_y_start + 20;
+            drawArrow(ctx, ftrans_x, ftrans_y_start, ftrans_x, ftrans_y_end, arrowHead);
+            ctx.fillText('F trans', ftrans_x, ftrans_y_start - textMargin);
+            
+            ctx.fillStyle = '#1f2937'; ctx.strokeStyle = '#1f2937';  
+            ctx.textAlign = 'right';
+            const flong_x_end = scaled_saddle_x - 10;
+            const flong_x_start = flong_x_end + 20;
+            const flong_y = scaled_saddle_y - 60; 
+            drawArrow(ctx, flong_x_start, flong_y, flong_x_end, flong_y, arrowHead);
+            ctx.fillText('F long', flong_x_end - textMargin, flong_y + 5);
+            
+            ctx.restore();  
+        }
+
+        // --- Helper Functions for Drawing (Unchanged) ---
+        function drawArrow(ctx, fromX, fromY, toX, toY, headLength) {
+            const dx = toX - fromX;
+            const dy = toY - fromY;
+            const angle = Math.atan2(dy, dx);
+            ctx.beginPath();
+            ctx.moveTo(fromX, fromY);
+            ctx.lineTo(toX, toY);
+            ctx.lineTo(toX - headLength * Math.cos(angle - Math.PI / 6), toY - headLength * Math.sin(angle - Math.PI / 6));
+            ctx.moveTo(toX, toY);
+            ctx.lineTo(toX - headLength * Math.cos(angle + Math.PI / 6), toY - headLength * Math.sin(angle + Math.PI / 6));
+            ctx.stroke();
+        }
+
+        function drawVerticalDimPx(ctx, x, y1, y2, text, dash, arrow, margin) {
+            const y_mid = y1 + (y2 - y1) / 2;
+            ctx.beginPath(); ctx.setLineDash(dash);
+            ctx.moveTo(x, y1); ctx.lineTo(x + 2*margin, y1);  
+            ctx.moveTo(x, y2); ctx.lineTo(x + 2*margin, y2);  
+            ctx.setLineDash([]);
+            ctx.moveTo(x, y1); ctx.lineTo(x, y2);  
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(x - arrow, y1 + arrow); ctx.lineTo(x, y1); ctx.lineTo(x + arrow, y1 + arrow);
+            ctx.moveTo(x - arrow, y2 - arrow); ctx.lineTo(x, y2); ctx.lineTo(x + arrow, y2 - arrow);
+            ctx.stroke();
+            ctx.fillText(text, x - margin, y_mid + 5);  
+        }
+
+        function drawHorizontalDimPx(ctx, y, x1, x2, text, dash, arrow, margin) {
+            const x_mid = x1 + (x2 - x1) / 2;
+            ctx.beginPath(); ctx.setLineDash(dash);
+            ctx.moveTo(x1, y); ctx.lineTo(x1, y - 2*margin);  
+            ctx.moveTo(x2, y); ctx.lineTo(x2, y - 2*margin);  
+            ctx.setLineDash([]);
+            ctx.moveTo(x1, y); ctx.lineTo(x2, y);  
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(x1 + arrow, y - arrow); ctx.lineTo(x1, y); ctx.lineTo(x1 + arrow, y + arrow);
+            ctx.moveTo(x2 - arrow, y - arrow); ctx.lineTo(x2, y); ctx.lineTo(x2 - arrow, y + arrow);
+            ctx.stroke();
+            ctx.fillText(text, x_mid, y + margin + 10);  
+        }
+
+        // --- Event Listeners (Unchanged) ---
+        const allInputs = simSection.querySelectorAll('input[type="range"]');
+        allInputs.forEach(input => {
+            input.addEventListener('input', calculateAndUpdate);
+        });
+
+        // --- Initial Call (Unchanged) ---
+        setTimeout(calculateAndUpdate, 0);
+
+        // --- Resize Redraw (Unchanged) ---
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(calculateAndUpdate, 100);
+        });
+
+    })();
+    </script>
+
+</body>
+</html>

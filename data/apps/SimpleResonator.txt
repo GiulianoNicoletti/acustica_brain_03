@@ -1,0 +1,1687 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Iulius Guitars - Resonator Simulator</title>
+
+    
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    
+
+    <style>
+
+        /* --- Self-Contained CSS from your Existing Page --- */
+
+        #iulius-sim-container {
+
+            font-family: 'Inter', sans-serif;
+
+            background-color: #f3f4f6; /* bg-gray-100 */
+
+            color: #1f2937; /* text-gray-800 */
+
+        }
+
+
+
+        #iulius-sim-container *,
+
+        #iulius-sim-container *::before,
+
+        #iulius-sim-container *::after {
+
+             box-sizing: border-box;
+
+        }
+
+
+
+        #iulius-sim-container .container {
+
+            width: 100%;
+
+            margin-left: auto;
+
+            margin-right: auto;
+
+            padding: 1rem; /* p-4 */
+
+        }
+
+        
+
+        @media (min-width: 640px) {
+
+            #iulius-sim-container .container { max-width: 640px; padding: 1.5rem; }
+
+        }
+
+        @media (min-width: 768px) {
+
+            #iulius-sim-container .container { max-width: 768px; }
+
+        }
+
+        @media (min-width: 1024px) {
+
+            #iulius-sim-container .container { max-width: 1024px; padding: 2rem; }
+
+        }
+
+        @media (min-width: 1280px) {
+
+            #iulius-sim-container .container { max-width: 1280px; }
+
+        }
+
+
+
+        #iulius-sim-container h1 { font-size: 1.875rem; line-height: 2.25rem; font-weight: 700; color: #111827; }
+
+        #iulius-sim-container h2 { font-size: 1.5rem; line-height: 2rem; font-weight: 700; color: #111827; }
+
+        #iulius-sim-container h3 { font-size: 1.25rem; line-height: 1.75rem; font-weight: 600; color: #1f2937; }
+
+
+
+        @media (min-width: 768px) {
+
+            #iulius-sim-container h1 { font-size: 2.25rem; line-height: 2.5rem; }
+
+        }
+
+
+
+        #iulius-sim-container .text-center { text-align: center; }
+
+        #iulius-sim-container .text-left { text-align: left; }
+
+        #iulius-sim-container .text-right { text-align: right; }
+
+        #iulius-sim-container .mb-10 { margin-bottom: 2.5rem; }
+
+        #iulius-sim-container .mb-6 { margin-bottom: 1.5rem; }
+
+        #iulius-sim-container .mb-4 { margin-bottom: 1rem; }
+
+        #iulius-sim-container .mt-1 { margin-top: 0.25rem; }
+
+        #iulius-sim-container .mt-2 { margin-top: 0.5rem; }
+
+        #iulius-sim-container .mt-4 { margin-top: 1rem; }
+
+        #iulius-sim-container .mt-12 { margin-top: 3rem; }
+
+        
+
+        #iulius-sim-container .space-y-12 > :not([hidden]) ~ :not([hidden]) { margin-top: 3rem; }
+
+        #iulius-sim-container .space-y-6 > :not([hidden]) ~ :not([hidden]) { margin-top: 1.5rem; }
+
+        #iulius-sim-container .space-x-2 > :not([hidden]) ~ :not([hidden]) { margin-left: 0.5rem; }
+
+        #iulius-sim-container .space-x-4 > :not([hidden]) ~ :not([hidden]) { margin-left: 1rem; }
+
+        
+
+        #iulius-sim-container .w-full { width: 100%; }
+
+        #iulius-sim-container .w-16 { width: 4rem; }
+
+        #iulius-sim-container .h-2 { height: 0.5rem; }
+
+        #iulius-sim-container .h-5 { height: 1.25rem; }
+
+        #iulius-sim-container .w-5 { width: 1.25rem; }
+
+        #iulius-sim-container .p-6 { padding: 1.5rem; }
+
+        #iulius-sim-container .p-4 { padding: 1rem; }
+
+        #iulius-sim-container .p-2 { padding: 0.5rem; }
+
+        #iulius-sim-container .pb-4 { padding-bottom: 1rem; }
+
+        #iulius-sim-container .pb-2 { padding-bottom: 0.5rem; }
+
+        #iulius-sim-container .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+
+        #iulius-sim-container .px-2 { padding-left: 0.5rem; padding-right: 0.5rem; }
+
+        #iulius-sim-container .px-4 { padding-left: 1rem; padding-right: 1rem; }
+
+
+
+        #iulius-sim-container .bg-white { background-color: #ffffff; }
+
+        #iulius-sim-container .bg-gray-50 { background-color: #f9fafb; }
+
+        #iulius-sim-container .bg-gray-200 { background-color: #e5e7eb; }
+
+
+
+        #iulius-sim-container .rounded-2xl { border-radius: 1rem; }
+
+        #iulius-sim-container .rounded-xl { border-radius: 0.75rem; }
+
+        #iulius-sim-container .rounded-lg { border-radius: 0.5rem; }
+
+        #iulius-sim-container .rounded { border-radius: 0.25rem; }
+
+        
+
+        #iulius-sim-container .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05); }
+
+        #iulius-sim-container .shadow-sm { box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05); }
+
+
+
+        #iulius-sim-container .border-b { border-bottom-width: 1px; }
+
+        #iulius-sim-container .border-gray-200 { border-color: #e5e7eb; }
+
+        #iulius-sim-container .border-gray-300 { border-color: #d1d5db; }
+
+        
+
+        #iulius-sim-container .grid { display: grid; }
+
+        #iulius-sim-container .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+
+        #iulius-sim-container .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+        
+
+        #iulius-sim-container .gap-6 { gap: 1.5rem; }
+
+        #iulius-sim-container .gap-4 { gap: 1rem; }
+
+        #iulius-sim-container .gap-2 { gap: 0.5rem; }
+
+        #iulius-sim-container .gap-x-4 { column-gap: 1rem; }
+
+        #iulius-sim-container .gap-y-3 { row-gap: 0.75rem; }
+
+
+
+        @media (min-width: 768px) {
+
+            #iulius-sim-container .md\:p-8 { padding: 2rem; }
+
+            #iulius-sim-container .md\:gap-8 { gap: 2rem; }
+
+        }
+
+
+
+        @media (min-width: 1024px) {
+
+            #iulius-sim-container .lg\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+            #iulius-sim-container .lg\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+            #iulius-sim-container .lg\:col-span-1 { grid-column: span 1 / span 1; }
+
+            #iulius-sim-container .lg\:col-span-2 { grid-column: span 2 / span 2; }
+
+        }
+
+
+
+        #iulius-sim-container .self-start { align-self: flex-start; }
+
+        #iulius-sim-container .flex { display: flex; }
+
+        #iulius-sim-container .items-center { align-items: center; }
+
+        #iulius-sim-container .justify-between { justify-content: space-between; }
+
+        #iulius-sim-container .justify-center { justify-content: center; }
+
+
+
+        #iulius-sim-container .font-bold { font-weight: 700; }
+
+        #iulius-sim-container .font-semibold { font-weight: 600; }
+
+        #iulius-sim-container .font-medium { font-weight: 500; }
+
+
+
+        #iulius-sim-container .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+
+        #iulius-sim-container .text-gray-500 { color: #6b7280; }
+
+        #iulius-sim-container .text-gray-600 { color: #4b5563; }
+
+        #iulius-sim-container .text-gray-700 { color: #374151; }
+
+        #iulius-sim-container .text-gray-800 { color: #1f2937; }
+
+        #iulius-sim-container .text-blue-600 { color: #2563eb; }
+
+        #iulius-sim-container .text-emerald-600 { color: #059669; }
+
+        #iulius-sim-container .text-yellow-500 { color: #f59e0b; }
+
+        #iulius-sim-container .text-white { color: #ffffff; }
+
+
+
+        #iulius-sim-container .appearance-none { appearance: none; }
+
+        #iulius-sim-container .cursor-pointer { cursor: pointer; }
+
+
+
+        #iulius-sim-container .slider-thumb::-webkit-slider-thumb {
+
+            -webkit-appearance: none; appearance: none;
+
+            width: 20px; height: 20px;
+
+            background: #3b82f6; cursor: pointer;
+
+            border-radius: 9999px; transition: background-color 0.2s;
+
+        }
+
+        #iulius-sim-container .slider-thumb::-moz-range-thumb {
+
+            width: 20px; height: 20px;
+
+            background: #3b82f6; cursor: pointer;
+
+            border-radius: 9999px; border: none;
+
+            transition: background-color 0.2s;
+
+        }
+
+        #iulius-sim-container .slider-thumb:disabled::-webkit-slider-thumb { background: #9ca3af; }
+
+        #iulius-sim-container .slider-thumb:disabled::-moz-range-thumb { background: #9ca3af; }
+
+        
+
+        #iulius-sim-container .sim-btn {
+
+            width: 100%; font-weight: 700;
+
+            padding: 0.5rem 1rem;
+
+            border-radius: 0.5rem;
+
+            transition: background-color 0.2s, color 0.2s, opacity 0.2s; /* Added opacity transition */
+
+            box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05);
+
+            color: white;
+
+            border: none;
+
+            cursor: pointer;
+
+        }
+
+        #iulius-sim-container .sim-btn:disabled { 
+
+            opacity: 0.5;
+
+            cursor: not-allowed;
+
+        }
+
+        #iulius-sim-container .sim-btn-primary { background-color: #2563eb; }
+
+        #iulius-sim-container .sim-btn-primary:hover:not(:disabled) { background-color: #1d4ed8; }
+
+        
+
+        #iulius-sim-container .sim-btn-secondary { background-color: #10b981; }
+
+        #iulius-sim-container .sim-btn-secondary:hover:not(:disabled) { background-color: #059669; }
+
+        
+
+        #iulius-sim-container .sim-btn-tertiary { background-color: #374151; }
+
+        #iulius-sim-container .sim-btn-tertiary:hover:not(:disabled) { background-color: #1f2937; }
+
+        
+
+        #iulius-sim-container .sim-btn-action { background-color: #f59e0b; }
+
+        #iulius-sim-container .sim-btn-action:hover:not(:disabled) { background-color: #d97706; }
+
+        
+
+        #iulius-sim-container .canvas-container {
+
+            position: relative; /* Needed for absolute positioning of logo */
+
+            width: 100%;
+
+            aspect-ratio: 16 / 9;
+
+            background-color: #f9fafb;
+
+            border-radius: 0.75rem;
+
+            padding: 0.5rem;
+
+        }
+
+        
+
+        #iulius-sim-container canvas { 
+
+            display: block; 
+
+            width: 100%; 
+
+            height: 100%; 
+
+        }
+
+
+
+        /* --- Logo on graph CSS --- */
+
+        #iulius-sim-container #iulius-logo-graph {
+
+            position: absolute;
+
+            bottom: 65px; /* From reference app */
+
+            right: 28px;  /* From reference app */
+
+            width: 50px;
+
+            height: auto;
+
+            opacity: 0.2;
+
+            z-index: 10;
+
+            pointer-events: none;
+
+        }
+
+
+
+        /* --- Footer CSS --- */
+
+        #iulius-sim-footer {
+
+            text-align: center;
+
+            padding: 1rem;
+
+            margin-top: 2rem;
+
+            color: #6b7280; /* text-gray-500 */
+
+            font-size: 0.875rem; /* text-sm */
+
+            line-height: 1.25rem;
+
+            font-family: 'Inter', sans-serif;
+
+        }
+
+
+
+        /* --- NEW: Custom Switch Styles based on 4-DOF App --- */
+
+        .toggle-switch {
+
+            display: inline-block;
+
+            position: relative;
+
+            width: 32px; /* Adjusted from 4-DOF app to fit better */
+
+            height: 16px; /* Adjusted */
+
+            cursor: pointer;
+
+        }
+
+
+
+        .toggle-switch input {
+
+            opacity: 0;
+
+            width: 0;
+
+            height: 0;
+
+        }
+
+
+
+        .slider-round {
+
+            position: absolute;
+
+            top: 0;
+
+            left: 0;
+
+            right: 0;
+
+            bottom: 0;
+
+            background-color: #ccc; /* bg-gray-300 equivalent for OFF */
+
+            transition: .2s;
+
+            border-radius: 16px; /* Rounded pill shape */
+
+        }
+
+
+
+        .slider-round:before {
+
+            position: absolute;
+
+            content: "";
+
+            height: 12px;
+
+            width: 12px;
+
+            left: 2px;
+
+            bottom: 2px;
+
+            background-color: white;
+
+            transition: .2s;
+
+            border-radius: 50%;
+
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.1);
+
+        }
+
+
+
+        input:checked + .slider-round {
+
+            background-color: #2563eb; /* text-blue-600 equivalent for ON */
+
+        }
+
+
+
+        input:checked + .slider-round:before {
+
+            transform: translateX(16px); /* 32px - 12px - 2*2px = 16px translation */
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    
+
+    <div id="iulius-sim-container">
+
+        <div class="container">
+
+            <div class="space-y-12">
+
+                
+
+                <section id="resonator-simulator" class="w-full bg-white rounded-2xl shadow-lg p-6 md:p-8">
+
+                    
+
+                    <div class="text-left mb-6 pb-4 border-b border-gray-200">
+
+                        <h2>Resonator Response Simulator</h2>
+
+                        <p class="text-gray-500 mt-1">Visualize how a simple mechanical resonator's response changes with its physical properties: mass, stiffness, and damping.</p>
+
+                    </div>
+
+                    
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
+
+                        
+
+                        <div class="lg:col-span-1 bg-gray-50 rounded-xl p-6 space-y-6 self-start">
+
+                            <h3>Controls</h3>
+
+                            
+
+                            <div>
+
+                                <label class="flex justify-between font-medium text-gray-700">
+
+                                    <span>Mass (m)</span>
+
+                                    <span id="mass-value" class="font-semibold text-blue-600">100 g</span>
+
+                                </label>
+
+                                <input type="range" id="mass" min="0.01" max="0.3" step="0.001" value="0.1" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb mt-2">
+
+                            </div>
+
+
+
+                            <div>
+
+                                <label class="flex justify-between font-medium text-gray-700">
+
+                                    <span>Stiffness (k)</span>
+
+                                    <span id="stiffness-value" class="font-semibold text-blue-600">40000 N/m</span>
+
+                                </label>
+
+                                <input type="range" id="stiffness" min="1" max="200000" step="100" value="40000" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb mt-2">
+
+                            </div>
+
+
+
+                            <div>
+
+                                <label class="flex justify-between font-medium text-gray-700">
+
+                                    <span>Q Factor</span>
+
+                                    <span id="q-factor-value" class="font-semibold text-blue-600">50</span>
+
+                                </label>
+
+                                <input type="range" id="q-factor" min="1" max="200" step="1" value="50" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb mt-2">
+
+                            </div>
+
+                            
+
+                            <div class="pt-4 border-t border-gray-200">
+
+                                <label for="phase-toggle" class="flex justify-between items-center font-medium text-gray-700">
+
+                                    <span>Show Phase (deg)</span>
+
+                                    <div class="toggle-switch">
+
+                                        <input type="checkbox" id="phase-toggle"> 
+
+                                        <span class="slider-round"></span>
+
+                                    </div>
+
+                                </label>
+
+                            </div>
+
+
+
+
+
+                            <div>
+
+                                <h3>Compare Curves</h3>
+
+                                <div class="grid grid-cols-2 gap-4 mt-4">
+
+                                    <button id="save-curve-btn" class="sim-btn sim-btn-primary">Save Curve</button>
+
+                                    <button id="reset-curves-btn" class="sim-btn sim-btn-tertiary" disabled>Reset</button>
+
+                                </div>
+
+                                <div id="saved-curves-legend" class="mt-4">
+
+                                    </div>
+
+                            </div>
+
+                        </div>
+
+
+
+                        <div class="lg:col-span-2 canvas-container">
+
+                            <canvas id="responseChart"></canvas>
+
+                            <img id="iulius-logo-graph" src="https://www.iuliusguitars.com/wp-content/uploads/2025/10/IuliusBlack.png" alt="Iulius Guitars Logo">
+
+                        </div>
+
+
+
+                    </div>
+
+                </section>
+
+                
+
+            </div> <div id="iulius-sim-footer">
+
+                © Iulius Guitars – Giuliano Nicoletti. These tools are shared for your personal growth. If you'd like to share them, just ask first.
+
+             </div>
+
+
+
+        </div> </div> <script>
+
+    // --- JavaScript for Resonator Simulator with Phase Plot ---
+
+    (() => {
+
+        const simSection = document.getElementById('resonator-simulator');
+
+        if (!simSection) return;
+
+
+
+        // DOM element references
+
+        const massSlider = simSection.querySelector('#mass');
+
+        const stiffnessSlider = simSection.querySelector('#stiffness');
+
+        const qFactorSlider = simSection.querySelector('#q-factor');
+
+        const phaseToggle = simSection.querySelector('#phase-toggle'); // NEW
+
+        const massValue = simSection.querySelector('#mass-value');
+
+        const stiffnessValue = simSection.querySelector('#stiffness-value');
+
+        const qFactorValue = simSection.querySelector('#q-factor-value');
+
+        const saveCurveBtn = simSection.querySelector('#save-curve-btn');
+
+        const resetCurvesBtn = simSection.querySelector('#reset-curves-btn');
+
+        const savedCurvesLegend = simSection.querySelector('#saved-curves-legend');
+
+        
+
+        const canvas = simSection.querySelector('#responseChart');
+
+        if (!canvas) return;
+
+        
+
+        const ctx = canvas.getContext('2d');
+
+        let responseChart;
+
+
+
+        // State variables for curve saving
+
+        let savedCurveCount = 0;
+
+        let savedCurveParameters = [];
+
+        const maxSavedCurves = 3;
+
+        // Blue (Live), Green (Phase), Orange, Purple, Emerald
+
+        const liveAmplitudeColor = '#3b82f6'; 
+
+        const livePhaseColor = '#10b981'; // Green for Phase, consistent with 4-DOF app
+
+        const savedCurveColors = ['#f97316', '#8b5cf6', '#059669']; // Orange, Purple, Emerald
+
+
+
+        // --- Physics & Chart Logic ---
+
+
+
+        function calculateResponse(mass, stiffness, dampingRatio) {
+
+            const omega_n = Math.sqrt(stiffness / mass);
+
+            const f_n = omega_n / (2 * Math.PI);
+
+
+
+            const amplitudeData = [];
+
+            const phaseData = []; // NEW
+
+            const minFreq = 20;
+
+            const maxFreq = 400;
+
+            const steps = 400;
+
+            
+
+            const logMin = Math.log10(minFreq);
+
+            const logMax = Math.log10(maxFreq);
+
+
+
+            for (let i = 0; i <= steps; i++) {
+
+                const logFreq = logMin + (i / steps) * (logMax - logMin);
+
+                const freq = Math.pow(10, logFreq);
+
+                const omega = 2 * Math.PI * freq;
+
+                const r = omega / omega_n;
+
+                
+
+                // Mobility Magnitude Squared Denominator
+
+                const den_sq = Math.pow(1 - r * r, 2) + Math.pow(2 * dampingRatio * r, 2);
+
+                
+
+                // Mobility Magnitude
+
+                const dimensionlessGain = 1 / Math.sqrt(den_sq);
+
+                const mobility = omega * dimensionlessGain / stiffness;
+
+                const amplitudeDb = 20 * Math.log10(mobility) + 40; // +40 is arbitrary offset
+
+                
+
+                // Phase (Angle of X/(F0/k) or V/F) 
+
+                // X/(F0/k) = 1 / [ (1 - r^2) + i(2*zeta*r) ]
+
+                // Phase = -atan2(2*zeta*r, 1 - r^2)
+
+                // Since mobility V/F = i*omega*X/F, the phase of V/F is 90 degrees + phase of X/F
+
+                const phaseRad = Math.atan2(2 * dampingRatio * r, 1 - r * r); // atan2(Im, Re)
+
+                const phaseDeg = (90 + (-(phaseRad * 180 / Math.PI))) % 360; // Start at 90 deg (low freq mobility)
+
+                // Normalize phase to range from 90 to -270 degrees (or 90 to -90 to -270, etc.)
+
+                // Given the mechanical system, the phase shifts from 90 deg (low freq) to -90 deg (high freq) for acceleration/force,
+
+                // or 90 deg to -90 deg for velocity/force (mobility).
+
+                // Let's use the typical SDOF phase shift from 90 to -90 degrees (or 0 to -180 if using displacement/force)
+
+                // Let's stick to the classic phase $\phi = \operatorname{atan2}(-2\zeta\omega/\omega_n, 1 - (\omega/\omega_n)^2)$
+
+                // The phase of X/F is:
+
+                const X_over_F_phase_rad = -Math.atan2(2 * dampingRatio * r, 1 - r * r);
+
+                const mobility_phase_deg = (X_over_F_phase_rad * 180 / Math.PI) + 90; // Mobility (V/F) starts at +90 (integrating the force)
+
+                // The phase naturally goes from 90 deg to -90 deg for velocity/force
+
+                
+
+                amplitudeData.push({x: freq, y: amplitudeDb, phase: mobility_phase_deg});
+
+                phaseData.push({x: freq, y: mobility_phase_deg});
+
+            }
+
+
+
+            return { amplitudeData, phaseData, resonantFrequency: f_n };
+
+        }
+
+
+
+        function updateChart() {
+
+            if (!responseChart) return;
+
+
+
+            const mass = parseFloat(massSlider.value);
+
+            const stiffness = parseFloat(stiffnessSlider.value);
+
+            const qFactor = parseFloat(qFactorSlider.value);
+
+            const dampingRatio = 1 / (2 * qFactor);
+
+            const showPhase = phaseToggle.checked; // NEW
+
+
+
+            massValue.textContent = `${(mass * 1000).toFixed(0)} g`;
+
+            stiffnessValue.textContent = `${stiffness.toFixed(0)} N/m`;
+
+            qFactorValue.textContent = `${qFactor.toFixed(0)}`;
+
+
+
+            const { amplitudeData, phaseData, resonantFrequency } = calculateResponse(mass, stiffness, dampingRatio);
+
+            
+
+            // --- Update Datasets ---
+
+            // Live Amplitude (always index 0)
+
+            responseChart.data.datasets[0].data = amplitudeData.map(d => ({x: d.x, y: d.y}));
+
+
+
+            // Live Phase (always index 1, manage visibility)
+
+            if (responseChart.data.datasets.length < 2) {
+
+                // Should not happen after init, but as a safeguard
+
+                responseChart.data.datasets.push(getPhaseDataset(phaseData, livePhaseColor, 'Live Phase', 'yPhase'));
+
+            } else {
+
+                responseChart.data.datasets[1].data = phaseData;
+
+                responseChart.data.datasets[1].hidden = !showPhase;
+
+            }
+
+            
+
+            // Update Saved Curves (Amplitude + Phase)
+
+            const savedCurvesToRemove = [];
+
+            for (let i = 0; i < savedCurveCount; i++) {
+
+                const params = savedCurveParameters[i];
+
+                const { amplitudeData: ampDataSaved, phaseData: phaseDataSaved } = calculateResponse(params.mass, params.stiffness, 1 / (2 * params.qFactor));
+
+                
+
+                const ampDatasetIndex = 2 + i * 2;
+
+                const phaseDatasetIndex = 3 + i * 2;
+
+
+
+                if (responseChart.data.datasets[ampDatasetIndex]) {
+
+                    responseChart.data.datasets[ampDatasetIndex].data = ampDataSaved.map(d => ({x: d.x, y: d.y}));
+
+                    
+
+                    responseChart.data.datasets[phaseDatasetIndex].data = phaseDataSaved;
+
+                    responseChart.data.datasets[phaseDatasetIndex].hidden = !showPhase; // Hide/show phase for saved curves too
+
+                } else {
+
+                    // This block handles adding saved curves after a reset/new save sequence
+
+                    console.error(`Missing dataset for saved curve ${i+1}`);
+
+                }
+
+            }
+
+
+
+            // --- Update Y-Axis Scale Visibility ---
+
+            responseChart.options.scales.yPhase.display = showPhase;
+
+
+
+            // Update the custom annotation
+
+            responseChart.options.plugins.annotation.annotations.line1.xMin = resonantFrequency;
+
+            responseChart.options.plugins.annotation.annotations.line1.label.content = `fₙ = ${resonantFrequency.toFixed(1)} Hz`;
+
+
+
+            // Reset tooltip callbacks to correctly handle phase (important)
+
+            responseChart.options.plugins.tooltip.callbacks.label = getTooltipCallback(amplitudeData, phaseData);
+
+
+
+            responseChart.update('none'); 
+
+        }
+
+
+
+        // Helper function for creating a phase dataset (DRY)
+
+        function getPhaseDataset(data, color, label, yAxisID) {
+
+            return {
+
+                label: label,
+
+                data: data,
+
+                borderColor: color,
+
+                borderWidth: 1.5,
+
+                pointRadius: 0,
+
+                tension: 0.1,
+
+                fill: false,
+
+                yAxisID: yAxisID, // Assign to the secondary axis
+
+                hidden: true, // Default to hidden
+
+                borderDash: [5, 5] // Dotted line for phase
+
+            };
+
+        }
+
+
+
+        // Function to create a tooltip callback that includes phase information
+
+        function getTooltipCallback(liveAmpData, livePhaseData) {
+
+            return (context) => {
+
+                const freq = parseFloat(context.parsed.x);
+
+                const label = context.dataset.label || '';
+
+                
+
+                if (context.dataset.yAxisID === 'y') {
+
+                    // Amplitude Label
+
+                    const amp = parseFloat(context.raw.y).toFixed(2);
+
+                    return `${label} Amp: ${amp} dB`;
+
+                } else if (context.dataset.yAxisID === 'yPhase') {
+
+                    // Phase Label (For live curve, or saved phase curve)
+
+                    const phase = parseFloat(context.raw.y).toFixed(1);
+
+                    return `${label} Phase: ${phase} deg`;
+
+                }
+
+                return label; // Fallback
+
+            };
+
+        }
+
+
+
+        // --- Curve Saving Logic ---
+
+
+
+        function saveCurve() {
+
+            if (savedCurveCount >= maxSavedCurves) return;
+
+            
+
+            const mass = parseFloat(massSlider.value);
+
+            const stiffness = parseFloat(stiffnessSlider.value);
+
+            const qFactor = parseFloat(qFactorSlider.value);
+
+            savedCurveParameters.push({ mass, stiffness, qFactor });
+
+
+
+            savedCurveCount++;
+
+            const { amplitudeData: ampDataSaved, phaseData: phaseDataSaved } = calculateResponse(mass, stiffness, 1 / (2 * qFactor));
+
+            const color = savedCurveColors[savedCurveCount - 1];
+
+            const curveIndex = savedCurveCount;
+
+
+
+            // 1. Add Amplitude Dataset
+
+            const newAmpDataset = {
+
+                label: `Amp Curve ${curveIndex}`,
+
+                data: ampDataSaved.map(d => ({x: d.x, y: d.y})),
+
+                borderColor: color,
+
+                borderWidth: 1.5,
+
+                pointRadius: 0,
+
+                tension: 0.1,
+
+                fill: false,
+
+                yAxisID: 'y',
+
+                order: curveIndex + 1 // Ensure saved curves are below live
+
+            };
+
+            responseChart.data.datasets.push(newAmpDataset);
+
+
+
+            // 2. Add Phase Dataset
+
+            const newPhaseDataset = getPhaseDataset(phaseDataSaved, color, `Phase Curve ${curveIndex}`, 'yPhase');
+
+            newPhaseDataset.hidden = !phaseToggle.checked; // Match current phase visibility
+
+            responseChart.data.datasets.push(newPhaseDataset);
+
+
+
+            responseChart.update('none');
+
+
+
+            updateButtonsAndLegend();
+
+        }
+
+
+
+        function resetCurves() {
+
+            // Remove all datasets except the first two (Live Amplitude and Live Phase)
+
+            responseChart.data.datasets.splice(2, responseChart.data.datasets.length - 2); 
+
+            savedCurveCount = 0;
+
+            savedCurveParameters = [];
+
+            responseChart.update('none');
+
+            updateButtonsAndLegend();
+
+        }
+
+
+
+        function updateButtonsAndLegend() {
+
+            // Update Save Button state and text
+
+            if (savedCurveCount >= maxSavedCurves) {
+
+                saveCurveBtn.disabled = true;
+
+                saveCurveBtn.textContent = 'Max Curves Saved';
+
+            } else {
+
+                saveCurveBtn.disabled = false;
+
+                saveCurveBtn.textContent = `Save Curve (${savedCurveCount + 1}/3)`;
+
+            }
+
+
+
+            // Update Reset Button state
+
+            resetCurvesBtn.disabled = savedCurveCount === 0;
+
+
+
+            // Re-render the legend for saved curves
+
+            savedCurvesLegend.innerHTML = '';
+
+            if (savedCurveCount > 0) {
+
+                const title = document.createElement('p');
+
+                title.className = 'font-semibold text-gray-700 mt-2'; // Template class
+
+                title.textContent = 'Saved Curves:';
+
+                savedCurvesLegend.appendChild(title);
+
+            }
+
+            savedCurveParameters.forEach((params, i) => {
+
+                const legendItem = document.createElement('div');
+
+                legendItem.className = 'flex justify-between items-center py-2 border-b border-gray-200'; // Template classes
+
+                
+
+                const massG = (params.mass * 1000).toFixed(0);
+
+                const stiffnessK = params.stiffness.toFixed(0);
+
+                const qFactor = params.qFactor.toFixed(0);
+
+                const color = savedCurveColors[i];
+
+
+
+                // Use template classes: flex, items-center, font-medium, text-sm, space-x-2, w-5, h-5, rounded-lg
+
+                legendItem.innerHTML = `
+
+                    <div class="flex items-center font-medium text-sm space-x-2">
+
+                        <span class="w-5 h-5 rounded-lg" style="background-color: ${color}; display: inline-block;"></span>
+
+                        <span>Curve ${i + 1}</span>
+
+                    </div>
+
+                    <div class="text-sm text-gray-500 text-right">
+
+                        m: ${massG}g, k: ${stiffnessK}N/m, Q: ${qFactor}
+
+                    </div>
+
+                `;
+
+                savedCurvesLegend.appendChild(legendItem);
+
+            });
+
+        }
+
+
+
+
+
+        // --- Chart Initialization ---
+
+
+
+        // Custom annotation plugin (as in your original file)
+
+        const annotationPlugin = {
+
+            id: 'annotation',
+
+            afterDraw(chart, args, options) {
+
+                if (!options.annotations) return;
+
+                
+
+                // Only draw annotation for the main "Live" curve
+
+                const liveDataset = chart.data.datasets[0];
+
+                if (!liveDataset || liveDataset.label !== 'Live Amplitude') return;
+
+
+
+                const { ctx, chartArea: { top, bottom, left, right }, scales: { x } } = chart;
+
+                const line1 = options.annotations.line1;
+
+                
+
+                const xVal = line1.xMin;
+
+                if (xVal >= x.min && xVal <= x.max) {
+
+                    ctx.save();
+
+                    const xPos = x.getPixelForValue(xVal);
+
+                    
+
+                    // Draw vertical line
+
+                    ctx.beginPath();
+
+                    ctx.strokeStyle = line1.borderColor;
+
+                    ctx.lineWidth = line1.borderWidth;
+
+                    ctx.setLineDash(line1.borderDash || []);
+
+                    ctx.moveTo(xPos, top);
+
+                    ctx.lineTo(xPos, bottom);
+
+                    ctx.stroke();
+
+                    ctx.setLineDash([]); 
+
+
+
+                    // Draw label
+
+                    const label = line1.label;
+
+                    if (label.enabled && label.content) {
+
+                        ctx.font = `${label.font.weight || '600'} ${label.font.size}px ${label.font.family || Chart.defaults.font.family}`;
+
+                        const textMetrics = ctx.measureText(label.content);
+
+                        const textWidth = textMetrics.width;
+
+                        const textHeight = label.font.size;
+
+                        const boxPadding = label.padding;
+
+                        const boxWidth = textWidth + 2 * boxPadding;
+
+                        const boxHeight = textHeight + 2 * boxPadding;
+
+                        const boxRadius = label.borderRadius;
+
+                        let boxX = xPos - boxWidth / 2;
+
+                        let boxY = bottom - boxHeight - 15; // Position from bottom
+
+                        if (boxX < left) boxX = left;
+
+                        if (boxX + boxWidth > right) boxX = right - boxWidth;
+
+
+
+                        ctx.fillStyle = label.backgroundColor;
+
+                        ctx.beginPath();
+
+                        ctx.moveTo(boxX + boxRadius, boxY);
+
+                        ctx.lineTo(boxX + boxWidth - boxRadius, boxY);
+
+                        ctx.quadraticCurveTo(boxX + boxWidth, boxY, boxX + boxWidth, boxY + boxRadius);
+
+                        ctx.lineTo(boxX + boxWidth, boxY + boxHeight - boxRadius);
+
+                        ctx.quadraticCurveTo(boxX + boxWidth, boxY + boxHeight, boxX + boxWidth - boxRadius, boxY + boxHeight);
+
+                        ctx.lineTo(boxX + boxRadius, boxY + boxHeight);
+
+                        ctx.quadraticCurveTo(boxX, boxY + boxHeight, boxX, boxY + boxHeight - boxRadius);
+
+                        ctx.lineTo(boxX, boxY + boxRadius);
+
+                        ctx.quadraticCurveTo(boxX, boxY, boxX + boxRadius, boxY);
+
+                        ctx.closePath();
+
+                        ctx.fill();
+
+
+
+                        ctx.textAlign = 'center';
+
+                        ctx.textBaseline = 'middle';
+
+                        ctx.fillStyle = label.color;
+
+                        ctx.fillText(label.content, boxX + boxWidth / 2, boxY + boxHeight / 2);
+
+                    }
+
+                    ctx.restore();
+
+                }
+
+            }
+
+        };
+
+
+
+        function initializeChart() {
+
+            if (!ctx) return;
+
+            
+
+            const initialMass = parseFloat(massSlider.value);
+
+            const initialStiffness = parseFloat(stiffnessSlider.value);
+
+            const initialQFactor = parseFloat(qFactorSlider.value);
+
+            const initialDamping = 1 / (2 * initialQFactor);
+
+            const { amplitudeData, phaseData, resonantFrequency } = calculateResponse(initialMass, initialStiffness, initialDamping);
+
+            
+
+            const uiFont = "'Inter', sans-serif";
+
+            Chart.defaults.font.family = uiFont;
+
+            Chart.register(annotationPlugin);
+
+
+
+            responseChart = new Chart(ctx, {
+
+                type: 'line',
+
+                data: {
+
+                    datasets: [
+
+                        { // Dataset 0: Live Amplitude (Left Axis)
+
+                            label: 'Live Amplitude',
+
+                            data: amplitudeData.map(d => ({x: d.x, y: d.y})),
+
+                            borderColor: liveAmplitudeColor,
+
+                            borderWidth: 2.5,
+
+                            pointRadius: 0,
+
+                            tension: 0.1,
+
+                            fill: false, 
+
+                            yAxisID: 'y', // Left axis
+
+                            order: 1 // Default order
+
+                        },
+
+                        { // Dataset 1: Live Phase (Right Axis) - NEW
+
+                            label: 'Live Phase',
+
+                            data: phaseData,
+
+                            borderColor: livePhaseColor,
+
+                            borderWidth: 1.5,
+
+                            pointRadius: 0,
+
+                            tension: 0.1,
+
+                            fill: false, 
+
+                            yAxisID: 'yPhase', // Right axis
+
+                            hidden: !phaseToggle.checked, // Default: hidden
+
+                            borderDash: [5, 5], // Dotted line
+
+                            order: 2
+
+                        }
+
+                    ]
+
+                },
+
+                options: {
+
+                    responsive: true,
+
+                    maintainAspectRatio: false,
+
+                    scales: {
+
+                        x: {
+
+                            type: 'logarithmic',
+
+                            min: 20,
+
+                            max: 400,
+
+                            title: { display: true, text: 'Frequency (Hz)', font: { size: 14 }, color: '#4b5563' },
+
+                            ticks: { 
+
+                                color: '#6b7280',
+
+                                callback: function(value, index, ticks) {
+
+                                    if (value === 20 || value === 50 || value === 100 || value === 200 || value === 400) {
+
+                                        return value.toPrecision(3);
+
+                                    }
+
+                                }
+
+                             }
+
+                        },
+
+                        y: { // Left Y-Axis (Amplitude)
+
+                            position: 'left',
+
+                            min: -10,
+
+                            max: 50,
+
+                            title: { display: true, text: 'Amplitude (dB)', font: { size: 14 }, color: '#4b5563' },
+
+                            ticks: { color: '#6b7280' }
+
+                        },
+
+                        yPhase: { // Right Y-Axis (Phase) - NEW
+
+                            position: 'right',
+
+                            display: phaseToggle.checked, // Default: false
+
+                            min: -100, // Phase range (90 to -90)
+
+                            max: 100,
+
+                            grid: { drawOnChartArea: false }, // Only draw grid for the left axis
+
+                            title: { display: true, text: 'Phase (deg)', font: { size: 14 }, color: '#4b5563' },
+
+                            ticks: {
+
+                                color: livePhaseColor,
+
+                                callback: function(value) {
+
+                                    return value.toFixed(0) + '°';
+
+                                }
+
+                            }
+
+                        }
+
+                    },
+
+                    plugins: {
+
+                        legend: { display: false },
+
+                        tooltip: {
+
+                            enabled: true,
+
+                            mode: 'index',
+
+                            intersect: false,
+
+                            callbacks: {
+
+                                title: (tooltipItems) => {
+
+                                    const freq = parseFloat(tooltipItems[0].parsed.x).toFixed(1);
+
+                                    return `Frequency: ${freq} Hz`;
+
+                                },
+
+                                // Dynamically generate label callbacks to include phase
+
+                                label: getTooltipCallback(amplitudeData, phaseData)
+
+                            }
+
+                        },
+
+                        annotation: {
+
+                            annotations: {
+
+                                line1: {
+
+                                    xMin: resonantFrequency,
+
+                                    borderColor: liveAmplitudeColor,
+
+                                    borderWidth: 2,
+
+                                    borderDash: [2, 3],
+
+                                    label: {
+
+                                        enabled: true,
+
+                                        content: `fₙ = ${resonantFrequency.toFixed(1)} Hz`,
+
+                                        backgroundColor: '#dbeafe', // blue-100
+
+                                        color: '#2563eb', // blue-600
+
+                                        font: { size: 14, weight: 600, family: uiFont },
+
+                                        padding: 6,
+
+                                        borderRadius: 4
+
+                                    }
+
+                                }
+
+                            }
+
+                        }
+
+                    },
+
+                    interaction: { mode: 'index', intersect: false }
+
+                }
+
+            });
+
+            updateChart();
+
+            updateButtonsAndLegend();
+
+        }
+
+
+
+        // Event listeners for real-time updates
+
+        massSlider.addEventListener('input', updateChart);
+
+        stiffnessSlider.addEventListener('input', updateChart);
+
+        qFactorSlider.addEventListener('input', updateChart);
+
+        phaseToggle.addEventListener('change', updateChart); // NEW: Listen for toggle change
+
+        saveCurveBtn.addEventListener('click', saveCurve);
+
+        resetCurvesBtn.addEventListener('click', resetCurves);
+
+        
+
+        // Initialize the chart when the page loads
+
+        if (document.readyState === 'loading') {
+
+             document.addEventListener('DOMContentLoaded', initializeChart);
+
+        } else {
+
+             initializeChart();
+
+        }
+
+
+
+        // Redraw canvas on resize (from your original file)
+
+        let resizeTimeout;
+
+        window.addEventListener('resize', () => {
+
+            clearTimeout(resizeTimeout);
+
+            resizeTimeout = setTimeout(() => {
+
+                // Chart.js is responsive, but keeping the pattern
+
+            }, 100);
+
+        });
+
+
+
+    })();
+
+    </script>
+
+</body>
+
+</html>

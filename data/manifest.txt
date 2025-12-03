@@ -1,0 +1,9 @@
+# Acustica Brain – Corpus manifest (Dec 2025)
+Included for embedding:
+- clean_verified/Mastering_Training_GN.txt
+- clean_verified/glossary.txt
+- apps/*.txt
+- brand/*.txt
+Excluded:
+- csv/ (numeric data)
+- raw_pdf/ (source archive)

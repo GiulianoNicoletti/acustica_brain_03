@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iulius Guitars - Flexural Rigidity (EI) Calculator</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- Base CSS --- */
+        #iulius-sim-container {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* bg-gray-100 */
+            color: #1f2937; /* text-gray-800 */
+        }
+
+        #iulius-sim-container *,
+        #iulius-sim-container *::before,
+        #iulius-sim-container *::after {
+            box-sizing: border-box;
+        }
+
+        #iulius-sim-container .container {
+            width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+            padding: 1rem; /* p-4 */
+            max-width: 1200px; 
+        }
+        
+        @media (min-width: 640px) {
+            #iulius-sim-container .container { padding: 1.5rem; }
+        }
+        @media (min-width: 1024px) {
+            #iulius-sim-container .container { padding: 2rem; }
+        }
+
+        #iulius-sim-container h1 { font-size: 1.875rem; line-height: 2.25rem; font-weight: 700; color: #111827; }
+        #iulius-sim-container h2 { font-size: 1.5rem; line-height: 2rem; font-weight: 700; color: #111827; }
+        #iulius-sim-container h3 { font-size: 1.25rem; line-height: 1.75rem; font-weight: 600; color: #1f2937; } 
+        #iulius-sim-container h4 { font-size: 0.875rem; line-height: 1.25rem; font-weight: 500; color: #374151; } 
+
+        @media (min-width: 768px) {
+            #iulius-sim-container h1 { font-size: 2.25rem; line-height: 2.5rem; }
+            #iulius-sim-container .md\:flex-row { flex-direction: row; }
+            /* Adjusted for 4 columns in the results section */
+            #iulius-sim-container .md\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); } 
+        }
+
+        #iulius-sim-container .text-center { text-align: center; }
+        #iulius-sim-container .text-left { text-align: left; }
+        #iulius-sim-container .mb-6 { margin-bottom: 1.5rem; }
+        #iulius-sim-container .mb-4 { margin-bottom: 1rem; }
+        #iulius-sim-container .mb-2 { margin-bottom: 0.5rem; } 
+        #iulius-sim-container .mt-1 { margin-top: 0.25rem; }
+        #iulius-sim-container .mt-2 { margin-top: 0.5rem; }
+        #iulius-sim-container .mt-4 { margin-top: 1rem; }
+        #iulius-sim-container .mt-6 { margin-top: 1.5rem; }
+        
+        #iulius-sim-container .space-y-12 > :not([hidden]) ~ :not([hidden]) { margin-top: 3rem; }
+        #iulius-sim-container .space-y-6 > :not([hidden]) ~ :not([hidden]) { margin-top: 1.5rem; }
+        #iulius-sim-container .space-y-4 > :not([hidden]) ~ :not([hidden]) { margin-top: 1rem; }
+        
+        #iulius-sim-container .w-full { width: 100%; }
+        #iulius-sim-container .h-full { height: 100%; }
+        #iulius-sim-container .h-2 { height: 0.5rem; }
+        #iulius-sim-container .p-6 { padding: 1.5rem; }
+        #iulius-sim-container .p-4 { padding: 1rem; }
+        #iulius-sim-container .pb-4 { padding-bottom: 1rem; }
+        #iulius-sim-container .pt-2 { padding-top: 0.5rem; }
+
+        #iulius-sim-container .bg-white { background-color: #ffffff; }
+        #iulius-sim-container .bg-gray-50 { background-color: #f9fafb; }
+        #iulius-sim-container .bg-gray-100 { background-color: #f3f4f6; }
+        #iulius-sim-container .bg-gray-200 { background-color: #e5e7eb; }
+        #iulius-sim-container .bg-blue-50 { background-color: #eff6ff; }
+        #iulius-sim-container .bg-emerald-50 { background-color: #ecfdf5; }
+
+        #iulius-sim-container .rounded-2xl { border-radius: 1rem; }
+        #iulius-sim-container .rounded-xl { border-radius: 0.75rem; }
+        #iulius-sim-container .rounded-lg { border-radius: 0.5rem; }
+        
+        #iulius-sim-container .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05); }
+
+        #iulius-sim-container .border-b { border-bottom-width: 1px; }
+        #iulius-sim-container .border-gray-200 { border-color: #e5e7eb; }
+        
+        #iulius-sim-container .grid { display: grid; }
+        #iulius-sim-container .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+        #iulius-sim-container .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        
+        #iulius-sim-container .gap-6 { gap: 1.5rem; }
+        #iulius-sim-container .gap-4 { gap: 1rem; }
+
+        @media (min-width: 768px) {
+            #iulius-sim-container .md\:p-8 { padding: 2rem; }
+            #iulius-sim-container .md\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        }
+
+        @media (min-width: 1024px) {
+            #iulius-sim-container .lg\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+            #iulius-sim-container .lg\:col-span-1 { grid-column: span 1 / span 1; }
+            #iulius-sim-container .lg\:col-span-2 { grid-column: span 2 / span 2; }
+        }
+
+        #iulius-sim-container .self-start { align-self: flex-start; }
+        #iulius-sim-container .flex { display: flex; }
+        #iulius-sim-container .flex-row { flex-direction: row; } 
+        #iulius-sim-container .flex-col { flex-direction: column; }
+        #iulius-sim-container .flex-1 { flex: 1 1 0%; } 
+        #iulius-sim-container .min-w-0 { min-width: 0; } 
+        #iulius-sim-container .items-center { align-items: center; }
+        #iulius-sim-container .items-baseline { align-items: baseline; }
+        #iulius-sim-container .justify-center { justify-content: center; }
+        #iulius-sim-container .justify-between { justify-content: space-between; }
+        #iulius-sim-container .ml-2 { margin-left: 0.5rem; }
+
+        #iulius-sim-container .font-semibold { font-weight: 600; }
+        #iulius-sim-container .font-medium { font-weight: 500; }
+
+        #iulius-sim-container .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+        #iulius-sim-container .text-xs { font-size: 0.75rem; line-height: 1rem; }
+        #iulius-sim-container .text-gray-500 { color: #6b7280; }
+        #iulius-sim-container .text-gray-700 { color: #374151; }
+        #iulius-sim-container .text-blue-600 { color: #2563eb; }
+        #iulius-sim-container .text-blue-800 { color: #1e40af; }
+        #iulius-sim-container .text-emerald-800 { color: #065f46; }
+
+        /* --- Slider Styles --- */
+        #iulius-sim-container .appearance-none { appearance: none; }
+        #iulius-sim-container .cursor-pointer { cursor: pointer; }
+        #iulius-sim-container .slider-thumb::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 20px; height: 20px; background: #3b82f6; cursor: pointer; border-radius: 9999px; transition: background-color 0.2s; }
+        #iulius-sim-container .slider-thumb::-moz-range-thumb { width: 20px; height: 20px; background: #3b82f6; cursor: pointer; border-radius: 9999px; border: none; transition: background-color 0.2s; }
+        #iulius-sim-container .slider-thumb:disabled::-webkit-slider-thumb { background: #9ca3af; }
+        #iulius-sim-container .slider-thumb:disabled::-moz-range-thumb { background: #9ca3af; }
+
+        /* --- Results Display Styles --- */
+        #iulius-sim-container .result-card { background-color: #eff6ff; border-radius: 0.75rem; padding: 1rem; }
+        #iulius-sim-container .result-label { font-size: 0.875rem; font-weight: 500; color: #1e40af; }
+        #iulius-sim-container .result-value { font-size: 1.5rem; font-weight: 700; color: #1d4ed8; line-height: 1; }
+        #iulius-sim-container .result-unit { font-size: 0.875rem; font-weight: 500; color: #1e40af; margin-left: 0.5rem; }
+
+        /* --- Canvas Container --- */
+        #iulius-sim-container .canvas-container {
+            position: relative; 
+            width: 100%;
+            background-color: #f9fafb;
+            border-radius: 0.75rem;
+            padding: 1rem; 
+            padding-top: 3rem; /* Extra padding for the title */
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 150px; 
+        }
+        
+        #iulius-sim-container canvas { 
+            display: block; 
+            width: 100%; 
+            height: auto; 
+        }
+
+        /* --- Logo CSS --- */
+        #iulius-sim-container .canvas-logo {
+            position: absolute;
+            bottom: 15px; 
+            right: 15px; 
+            width: 50px; 
+            height: auto;
+            opacity: 0.2;
+            pointer-events: none; 
+            z-index: 10; 
+        }
+
+        /* --- Canvas/Panel Title CSS --- */
+        /* Apply position styles to h3 elements inside these containers */
+        #iulius-sim-container .canvas-container h3,
+        #iulius-sim-container .reference-container h3 {
+            position: absolute;
+            top: 1rem; 
+            left: 1rem; 
+            right: 1rem; 
+            text-align: center; 
+            z-index: 5; 
+            margin: 0; /* Override default h3 margin */
+            /* Ensure font styles match the main h3 */
+            font-size: 1.25rem; 
+            line-height: 1.75rem;
+            font-weight: 600;
+            color: #1f2937; 
+        }
+        
+        /* Container for the reference image */
+        #iulius-sim-container .reference-container {
+            position: relative; 
+            background-color: #f9fafb; 
+            border-radius: 0.75rem; 
+            padding: 1rem; 
+            padding-top: 3rem; /* Extra padding for the title */
+            display: flex;
+            flex-direction: column; /* Stack title and image */
+            align-items: center;
+            justify-content: center; /* Center vertically */
+            height: 100%; 
+        }
+        #iulius-sim-container .reference-container img {
+            max-width: 100%; 
+            max-height: 300px; 
+            object-fit: contain;
+            display: block; 
+            margin-top: 0.5rem; 
+        }
+        
+        /* --- Footer --- */
+        #iulius-sim-footer { text-align: center; padding: 1rem; margin-top: 2rem; color: #6b7280; font-size: 0.875rem; line-height: 1.25rem; font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body>
+    
+    <div id="iulius-sim-container">
+        <div class="container">
+            <div class="space-y-12">
+                
+                <section id="flexural-rigidity-calculator" class="w-full bg-white rounded-2xl shadow-lg p-6 md:p-8">
+                    
+                    <div class="text-left mb-6 pb-4 border-b border-gray-200">
+                        <h2>Flexural Rigidity (EI) Calculator</h2>
+                        <p class="text-gray-500 mt-1">Calculate the EI of a soundboard section, based on the properties of the plate and the braces.</p>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        
+                        <div class="lg:col-span-1 space-y-6 self-start">
+                            <div class="bg-gray-50 rounded-xl p-6 space-y-4">
+                                <h3>Soundboard</h3>
+                                <div>
+                                    <label class="flex justify-between font-medium text-gray-700">
+                                        <span>Width (L)</span>
+                                        <span id="sb-width-value" class="font-semibold text-blue-600">220 mm</span>
+                                    </label>
+                                    <input type="range" id="sb-width" min="150" max="350" step="1" value="220" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb mt-2">
+                                </div>
+                                <div>
+                                    <label class="flex justify-between font-medium text-gray-700">
+                                        <span>Thickness (t)</span>
+                                        <span id="sb-thickness-value" class="font-semibold text-blue-600">2.8 mm</span>
+                                    </label>
+                                    <input type="range" id="sb-thickness" min="0" max="5.0" step="0.1" value="2.8" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb mt-2">
+                                </div>
+                                <div>
+                                    <label class="flex justify-between font-medium text-gray-700">
+                                        <span>E-Modulus (E_sb)</span>
+                                        <span id="sb-e-modulus-value" class="font-semibold text-blue-600">12.00 GPa</span>
+                                    </label>
+                                    <input type="range" id="sb-e-modulus" min="5.0" max="20.0" step="0.05" value="12" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb mt-2">
+                                </div>
+                                <div>
+                                    <label class="flex justify-between font-medium text-gray-700">
+                                        <span>Density (ρ_sb)</span>
+                                        <span id="sb-density-value" class="font-semibold text-blue-600">400 kg/m³</span>
+                                    </label>
+                                    <input type="range" id="sb-density" min="200" max="1000" step="10" value="400" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb mt-2">
+                                </div>
+                                <div>
+                                    <label class="flex justify-between font-medium text-gray-700">
+                                        <span>Monopole Surface</span>
+                                        <span id="sb-surface-value" class="font-semibold text-blue-600">450.0 cm²</span>
+                                    </label>
+                                    <input type="range" id="sb-surface" min="200" max="1000" step="1" value="450" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb mt-2">
+                                </div>
+                            </div>
+                            
+                            <div class="bg-gray-50 rounded-xl p-6 space-y-4">
+                                <h3>Bracing</h3>
+                                <div>
+                                    <label class="flex justify-between font-medium text-gray-700">
+                                        <span>E-Modulus (E_br)</span>
+                                        <span id="br-e-modulus-value" class="font-semibold text-blue-600">12.0 GPa</span>
+                                    </label>
+                                    <input type="range" id="br-e-modulus" min="5.0" max="20.0" step="0.1" value="12.0" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb mt-2">
+                                </div>
+                                <div>
+                                    <label class="flex justify-between font-medium text-gray-700">
+                                        <span>Density (ρ_br)</span>
+                                        <span id="br-density-value" class="font-semibold text-blue-600">400 kg/m³</span>
+                                    </label>
+                                    <input type="range" id="br-density" min="200" max="1000" step="10" value="400" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb mt-2">
+                                </div>
+                                <div>
+                                    <label class="flex justify-between font-medium text-gray-700">
+                                        <span>Brace Quantity (n)</span>
+                                        <span id="br-quantity-value" class="font-semibold text-blue-600">2</span>
+                                    </label>
+                                    <input type="range" id="br-quantity" min="1" max="10" step="1" value="2" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb mt-2">
+                                </div>
+                                <div>
+                                    <label class="flex justify-between font-medium text-gray-700">
+                                        <span>Base Width (b)</span>
+                                        <span id="br-base-width-value" class="font-semibold text-blue-600">10.0 mm</span>
+                                    </label>
+                                    <input type="range" id="br-base-width" min="2" max="20" step="0.5" value="10" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb mt-2">
+                                </div>
+                                <div>
+                                    <label class="flex justify-between font-medium text-gray-700">
+                                        <span>Total Height (H)</span>
+                                        <span id="br-total-height-value" class="font-semibold text-blue-600">13.0 mm</span>
+                                    </label>
+                                    <input type="range" id="br-total-height" min="3" max="20" step="0.5" value="13" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb mt-2">
+                                </div>
+                                <div>
+                                    <label class="flex justify-between font-medium text-gray-700">
+                                        <span>Triangular Height (h)</span>
+                                        <span id="br-tri-height-value" class="font-semibold text-blue-600">8.0 mm</span>
+                                    </label>
+                                    <input type="range" id="br-tri-height" min="0" max="20" step="0.5" value="8" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb mt-2">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="lg:col-span-2 space-y-6 self-start">
+                            
+                            <div>
+                                <div class="canvas-container">
+                                    <h3 id="full-section-label">Full Cross-Section (D_mono = 239.4 mm | Braces: 2/2)</h3> 
+                                    <canvas id="brace-section-canvas"></canvas>
+                                    <img class="canvas-logo" src="https://www.iuliusguitars.com/wp-content/uploads/2025/10/IuliusBlack.png" alt="Iulius Guitars Logo">
+                                </div>
+                            </div>
+
+                            <div class="flex flex-row gap-6">
+                                
+                                <div class="flex-1 min-w-0">
+                                    <div class="canvas-container h-full">
+                                        <h3>Brace Detail</h3>
+                                        <canvas id="brace-detail-canvas"></canvas>
+                                        <img class="canvas-logo" src="https://www.iuliusguitars.com/wp-content/uploads/2025/10/IuliusBlack.png" alt="Iulius Guitars Logo">
+                                    </div>
+                                </div>
+
+                                <div class="flex-1 min-w-0">
+                                    <div class="reference-container h-full">
+                                            <h3>Soundboard cross-section</h3>
+                                            <img src="https://www.iuliusguitars.com/wp-content/uploads/2025/10/Cut.jpg" 
+                                                 alt="Diagram of the soundboard section being analyzed" 
+                                                 class="rounded-lg"
+                                                 onerror="this.style.display='none'">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                             <div class="bg-gray-100 rounded-xl p-6">
+                                    <h3 class="mb-4">Calculated Results</h3>
+                                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                        
+                                        <div class="result-card">
+                                            <label class="result-label">Flexural Rigidity (EI)</label>
+                                            <div class="flex items-center pt-2">
+                                                <span id="result-ei" class="result-value">89.16</span>
+                                                <span class="result-unit">N·m²</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="result-card">
+                                            <label class="result-label">Neutral Axis (y_bar)</label>
+                                             <div class="flex items-center pt-2">
+                                                <span id="result-y-bar" class="result-value">2.80</span>
+                                                <span class="result-unit">mm</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="result-card">
+                                            <label class="result-label">Soundboard Monopole equivalent mass</label>
+                                            <div class="flex items-baseline pt-2">
+                                                <span id="result-sb-mass" class="result-value">27.72</span>
+                                                <span class="result-unit">g</span>
+                                                <span id="result-sb-mass-perc" class="text-xs text-blue-800 ml-2">(98.6%)</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="result-card bg-emerald-50">
+                                            <label class="result-label text-emerald-800">Monopole bracing equivalent mass</label>
+                                            <div class="flex items-baseline pt-2">
+                                                <span id="result-br-mass" class="result-value text-emerald-800">0.40</span>
+                                                <span class="result-unit text-emerald-800">g</span>
+                                                <span id="result-br-mass-perc" class="text-xs text-blue-800 ml-2">(1.4%)</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="result-card">
+                                            <label class="result-label">Soundboard EI</label>
+                                            <div class="flex items-baseline pt-2">
+                                                <span id="result-ei-sb" class="result-value">--</span>
+                                                <span class="result-unit">N·m²</span>
+                                                <span id="result-ei-sb-perc" class="text-xs text-blue-800 ml-2">(-%)</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="result-card bg-emerald-50">
+                                            <label class="result-label text-emerald-800">Bracing EI</label>
+                                            <div class="flex items-baseline pt-2">
+                                                <span id="result-ei-br" class="result-value text-emerald-800">--</span>
+                                                <span class="result-unit text-emerald-800">N·m²</span>
+                                                <span id="result-ei-br-perc" class="text-xs text-blue-800 ml-2">(-%)</span>
+                                            </div>
+                                        </div>
+                                        
+                                    </div>
+                             </div>
+                        </div>
+                    </div>
+                </section>
+                
+            </div>
+            
+            <div id="iulius-sim-footer">
+                © Iulius Guitars – Giuliano Nicoletti. These tools are shared for your personal growth. If you'd like to share them, just ask first.
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+    (() => {
+        // --- DOM Elements ---
+        const simSection = document.getElementById('flexural-rigidity-calculator');
+        if (!simSection) return;
+        
+        // Soundboard Inputs
+        const sbWidthEl = simSection.querySelector('#sb-width');
+        const sbThicknessEl = simSection.querySelector('#sb-thickness');
+        const sbEModulusEl = simSection.querySelector('#sb-e-modulus');
+        const sbDensityEl = simSection.querySelector('#sb-density');
+        const sbSurfaceEl = simSection.querySelector('#sb-surface'); // S_mono in cm²
+        // const sbMassFactorEl is now removed
+        
+        // Bracing Inputs
+        const brEModulusEl = simSection.querySelector('#br-e-modulus');
+        const brDensityEl = simSection.querySelector('#br-density');
+        const brQuantityEl = simSection.querySelector('#br-quantity');
+        const brBaseWidthEl = simSection.querySelector('#br-base-width');
+        const brTotalHeightEl = simSection.querySelector('#br-total-height');
+        const brTriHeightEl = simSection.querySelector('#br-tri-height');
+        
+        // Value Display Elements
+        const sbWidthValueEl = simSection.querySelector('#sb-width-value');
+        const sbThicknessValueEl = simSection.querySelector('#sb-thickness-value');
+        const sbEModulusValueEl = simSection.querySelector('#sb-e-modulus-value');
+        const sbDensityValueEl = simSection.querySelector('#sb-density-value');
+        const sbSurfaceValueEl = simSection.querySelector('#sb-surface-value'); // S_mono in cm²
+        const brEModulusValueEl = simSection.querySelector('#br-e-modulus-value');
+        const brDensityValueEl = simSection.querySelector('#br-density-value');
+        const brQuantityValueEl = simSection.querySelector('#br-quantity-value');
+        const brBaseWidthValueEl = simSection.querySelector('#br-base-width-value');
+        const brTotalHeightValueEl = simSection.querySelector('#br-total-height-value');
+        const brTriHeightValueEl = simSection.querySelector('#br-tri-height-value');
+        
+        // Result Elements
+        const resultEiEl = simSection.querySelector('#result-ei');
+        const resultYBarEl = simSection.querySelector('#result-y-bar');
+        const resultSbMassEl = simSection.querySelector('#result-sb-mass'); // Effective Soundboard Mass
+        const resultBrMassEl = simSection.querySelector('#result-br-mass'); // Effective Bracing Mass
+        const resultSbMassPercEl = simSection.querySelector('#result-sb-mass-perc'); // Sb Mass Percentage
+        const resultBrMassPercEl = simSection.querySelector('#result-br-mass-perc'); // Br Mass Percentage
+
+        // --- NEW Result Elements ---
+        const resultEiSbEl = simSection.querySelector('#result-ei-sb');
+        const resultEiSbPercEl = simSection.querySelector('#result-ei-sb-perc');
+        const resultEiBrEl = simSection.querySelector('#result-ei-br');
+        const resultEiBrPercEl = simSection.querySelector('#result-ei-br-perc');
+        
+        // Canvas Elements
+        const canvas = simSection.querySelector('#brace-section-canvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const canvasDetail = simSection.querySelector('#brace-detail-canvas');
+        if (!canvasDetail) return;
+        const ctxDetail = canvasDetail.getContext('2d');
+        const fullSectionLabelEl = simSection.querySelector('#full-section-label'); 
+        
+        /**
+         * Calculates the chord length of a brace segment within the active monopole circle.
+         * @param {number} R_mono - Monopole Radius (mm)
+         * @param {number} x_brace_center - Center of the brace (mm) relative to L/2 (center of the section)
+         * @param {number} b_brace - Base width of the brace (mm)
+         * @returns {number} The active chord length (mm). Returns 0 if brace is outside the circle.
+         */
+        function calculateBraceChordLength(R_mono, x_brace_center, b_brace) {
+            const x1 = x_brace_center - b_brace / 2;
+            const x2 = x_brace_center + b_brace / 2;
+            
+            // Monopole circle is centered at x=0.
+            let intersect_x_left = Math.max(x1, -R_mono);
+            let intersect_x_right = Math.min(x2, R_mono);
+            
+            const active_length = Math.max(0, intersect_x_right - intersect_x_left);
+            return active_length;
+        }
+
+        function calculateAndUpdate() {
+            // CONSTANT EFFECTIVE MASS FACTOR ALPHA
+            const massFactor = 0.55; // Fixed value based on physical observation (25-30g / 50g)
+            
+            // Read Inputs
+            const L = parseFloat(sbWidthEl.value);
+            const t = parseFloat(sbThicknessEl.value);
+            const E_sb_gpa = parseFloat(sbEModulusEl.value);
+            const rho_sb = parseFloat(sbDensityEl.value);
+            const S_mono_cm2 = parseFloat(sbSurfaceEl.value); // S_mono in cm²
+            const E_br_gpa = parseFloat(brEModulusEl.value);
+            const rho_br = parseFloat(brDensityEl.value);
+            const n = parseInt(brQuantityEl.value);
+            const b = parseFloat(brBaseWidthEl.value);
+            const H = parseFloat(brTotalHeightEl.value);
+            let h = parseFloat(brTriHeightEl.value);
+            
+            // Clamp triangular height h
+            if (h > H) { h = H; brTriHeightEl.value = h; } 
+            if (h < 0) { h = 0; brTriHeightEl.value = h; }
+
+            // Unit Conversions & Validation
+            const S_mono_mm2 = S_mono_cm2 * 100; // S_mono from cm² to mm²
+            
+            // Update Value Displays
+            sbWidthValueEl.textContent = `${L.toFixed(0)} mm`; 
+            sbThicknessValueEl.textContent = `${t.toFixed(1)} mm`;
+            sbEModulusValueEl.textContent = `${E_sb_gpa.toFixed(2)} GPa`; 
+            sbDensityValueEl.textContent = `${rho_sb.toFixed(0)} kg/m³`;
+            sbSurfaceValueEl.textContent = `${S_mono_cm2.toFixed(1)} cm²`; // Updated unit/display
+            brEModulusValueEl.textContent = `${E_br_gpa.toFixed(2)} GPa`;
+            brDensityValueEl.textContent = `${rho_br.toFixed(0)} kg/m³`; 
+            brQuantityValueEl.textContent = `${n.toFixed(0)}`;
+            brBaseWidthValueEl.textContent = `${b.toFixed(1)} mm`; 
+            brTotalHeightValueEl.textContent = `${H.toFixed(1)} mm`;
+            brTriHeightValueEl.textContent = `${h.toFixed(1)} mm`;
+
+            if ([L, t, E_sb_gpa, rho_sb, S_mono_cm2, E_br_gpa, rho_br, n, b, H, h].some(isNaN) || L <= 0 || t < 0 || E_sb_gpa <= 0 || rho_sb < 0 || S_mono_cm2 < 0 || E_br_gpa <= 0 || rho_br < 0 || n < 0 || b < 0 || H < 0) {
+                resultEiEl.textContent = '---'; resultYBarEl.textContent = '---'; 
+                resultSbMassEl.textContent = '---'; resultBrMassEl.textContent = '---'; 
+                resultSbMassPercEl.textContent = ''; resultBrMassPercEl.textContent = '';
+                
+                // --- NEW ---
+                resultEiSbEl.textContent = '---';
+                resultEiSbPercEl.textContent = '';
+                resultEiBrEl.textContent = '---';
+                resultEiBrPercEl.textContent = '';
+                
+                if (fullSectionLabelEl) { fullSectionLabelEl.textContent = `Full Cross-Section`; } 
+                drawFullSection(L, t, b, H, h, 0, n, 0); drawBraceDetail(t, b, H, h, 0);
+                return;
+            }
+
+            // 1. Calculate Flexural Rigidity (EI) - RIGIDITY CALCULATION IS UNCHANGED
+            const E_sb = E_sb_gpa * 1e9; // Pa
+            const E_br = E_br_gpa * 1e9; // Pa
+            const E_ratio = E_br / E_sb;
+            
+            const A_ta = L * t; 
+            const y_ta = t / 2; 
+            const A_ta_eq = A_ta; 
+            
+            const h_rect = H - h; 
+            const A_br_rect = b * Math.max(0, h_rect); 
+            const A_br_tri = b * h / 2; 
+            const A_br_one = A_br_rect + A_br_tri; 
+            
+            const y_br_rect_centroid = t + (h_rect / 2); 
+            const y_br_tri_centroid = t + h_rect + (h / 3); 
+            
+            let y_br = (A_br_one > 0) ? (A_br_rect * y_br_rect_centroid + A_br_tri * y_br_tri_centroid) / A_br_one : t; 
+            
+            const A_br_total_eq = n * E_ratio * A_br_one; 
+            
+            let y_bar = (A_ta_eq + A_br_total_eq > 0) ? ( (A_ta_eq * y_ta) + (A_br_total_eq * y_br) ) / ( A_ta_eq + A_br_total_eq ) : 0; 
+            
+            const I_ta_local = (L * Math.pow(t, 3)) / 12; 
+            const d_ta = y_bar - y_ta; 
+            const I_ta_parallel = A_ta_eq * Math.pow(d_ta, 2); 
+            const I_ta_total_eq = I_ta_local + I_ta_parallel; 
+            
+            const I_rect_local = (b * Math.pow(Math.max(0, h_rect), 3)) / 12; 
+            const I_tri_local = (b * Math.pow(h, 3)) / 36; 
+            
+            const d_rect_local = y_br - y_br_rect_centroid;
+            const d_tri_local = y_br - y_br_tri_centroid;
+            
+            const I_br_one_local = (I_rect_local + A_br_rect * Math.pow(d_rect_local, 2)) + 
+                                   (I_tri_local + A_br_tri * Math.pow(d_tri_local, 2)); 
+            
+            const d_br = y_br - y_bar; 
+            const I_br_total_eq = n * E_ratio * (I_br_one_local + A_br_one * Math.pow(d_br, 2)); 
+            
+            const I_total_eq = I_ta_total_eq + I_br_total_eq; 
+            const I_total_eq_m4 = I_total_eq / 1e12; 
+            
+            const EI = E_sb * I_total_eq_m4; 
+            
+            // --- NEW STIFFNESS CALCULATIONS ---
+            const EI_sb = E_sb * (I_ta_total_eq / 1e12);
+            const EI_br = E_sb * (I_br_total_eq / 1e12); // Uses E_sb as the reference modulus
+            
+            const EI_sb_perc = (I_total_eq > 0) ? (I_ta_total_eq / I_total_eq) * 100 : 0;
+            const EI_br_perc = (I_total_eq > 0) ? (I_br_total_eq / I_total_eq) * 100 : 0;
+            
+            // 2. Calculate Active Mass (Physical Mass)
+            
+            const R_mono = Math.sqrt(S_mono_mm2 / Math.PI); // Monopole Radius in mm
+            const D_mono = R_mono * 2; // Monopole Diameter in mm
+            
+            // Active Soundboard Mass (Physical Mass)
+            const m_sb_physical_g = (S_mono_mm2 * t * rho_sb) / 1e6; 
+            
+            // Active Bracing Mass (Physical Mass)
+            const spacing = (L - n * b) / (n + 1); 
+            let total_active_brace_length = 0;
+            let n_active = 0;
+            
+            for (let i = 0; i < n; i++) {
+                const x_start_from_left = (i + 1) * spacing + i * b; 
+                const x_center_from_left = x_start_from_left + b / 2;
+                const x_center_brace = x_center_from_left - (L / 2); // Center of brace relative to center of section (x=0)
+                
+                const active_chord = calculateBraceChordLength(R_mono, x_center_brace, b);
+                total_active_brace_length += active_chord;
+                if (active_chord > 0) {
+                    n_active++;
+                }
+            }
+            
+            const total_active_brace_volume_mm3 = total_active_brace_length * A_br_one;
+            const m_br_physical_g = (total_active_brace_volume_mm3 * rho_br) / 1e6; 
+            
+            // 3. APPLY FIXED SCALING FACTOR for Equivalent Mass DISPLAY
+            const m_sb_eff_g = m_sb_physical_g * massFactor; 
+            const m_br_eff_g = m_br_physical_g * massFactor; 
+            
+            const m_total_eff_g = m_sb_eff_g + m_br_eff_g; // Total Effective Mass (for percentage calculation only)
+            
+            // Percentage Breakdown (Based on Effective Mass)
+            const m_sb_perc = (m_total_eff_g > 0) ? (m_sb_eff_g / m_total_eff_g) * 100 : 0;
+            const m_br_perc = (m_total_eff_g > 0) ? (m_br_eff_g / m_total_eff_g) * 100 : 0;
+
+            // Update Result Elements
+            resultEiEl.textContent = EI.toFixed(2); 
+            resultYBarEl.textContent = y_bar.toFixed(2); 
+            resultSbMassEl.textContent = m_sb_eff_g.toFixed(2); // Outputting Effective Mass
+            resultBrMassEl.textContent = m_br_eff_g.toFixed(2); // Outputting Effective Mass
+            
+            resultSbMassPercEl.textContent = `(${m_sb_perc.toFixed(1)}%)`;
+            resultBrMassPercEl.textContent = `(${m_br_perc.toFixed(1)}%)`;
+
+            // --- NEW ---
+            resultEiSbEl.textContent = EI_sb.toFixed(2);
+            resultEiSbPercEl.textContent = `(${EI_sb_perc.toFixed(1)}%)`;
+            resultEiBrEl.textContent = EI_br.toFixed(2);
+            resultEiBrPercEl.textContent = `(${EI_br_perc.toFixed(1)}%)`;
+
+            // Update Visualization Label
+            if (fullSectionLabelEl) { 
+                fullSectionLabelEl.textContent = `Full Cross-Section (D_mono = ${D_mono.toFixed(1)} mm | Braces: ${n_active}/${n})`; 
+            } 
+            
+            // Redraw Canvases
+            drawFullSection(L, t, b, H, h, y_bar, n, R_mono); 
+            drawBraceDetail(t, b, H, h, y_bar);
+        }
+        
+        /**
+         * Draws the full cross section and the monopole radius (R_mono).
+         */
+        function drawFullSection(L, t, b, H, h, y_bar, n, R_mono) { 
+            const w = canvas.clientWidth; if (w <= 0) return; canvas.width = w; 
+            const h_rect = Math.max(0, H - h); const topPadding = 10; const bottomPadding = 35; 
+            const drawingHeight = H + t; const drawingWidth = L; const availableWidth = w - 40; 
+            let scale; if (drawingHeight > 0 && drawingWidth > 0) { scale = availableWidth / drawingWidth; } else { scale = 1; }
+            const scaledDrawingHeight = drawingHeight * scale; const tight_h_canvas = scaledDrawingHeight + topPadding + bottomPadding;
+            const h_canvas = tight_h_canvas; canvas.height = h_canvas; canvas.style.height = `${h_canvas}px`; ctx.clearRect(0, 0, w, h_canvas); 
+            const oy = tight_h_canvas - bottomPadding; const ox = w / 2;
+            ctx.save(); ctx.translate(ox, oy); ctx.scale(scale, -scale); 
+            const dimOffset = 10 / scale; 
+            
+            // Draw Monopole Diameter line
+            if (R_mono > 0) {
+                 ctx.beginPath();
+                 ctx.strokeStyle = 'rgba(239, 68, 68, 0.4)'; // Red, semi-transparent
+                 ctx.lineWidth = 1.5 / scale;
+                 ctx.setLineDash([4 / scale, 4 / scale]); // Dashed line
+                 ctx.moveTo(-R_mono, 0);
+                 ctx.lineTo(R_mono, 0);
+                 ctx.stroke();
+                 ctx.setLineDash([]); // Reset dash
+            }
+            
+            // Draw Soundboard Plate (BOTTOM LAYER)
+            const fillMaterialColor = '#f9fafb'; // Light grey/off-white for all wood sections
+            
+            ctx.fillStyle = fillMaterialColor; // Set Soundboard fill color
+            ctx.strokeStyle = '#2563eb'; // Soundboard border color (blue)
+            ctx.lineWidth = 1.5 / scale; 
+            ctx.fillRect(-L / 2, 0, L, t); 
+            ctx.strokeRect(-L / 2, 0, L, t);
+            
+            // Draw Braces
+            ctx.strokeStyle = '#059669'; // Bracing outline (green)
+            ctx.lineWidth = 1.5 / scale;
+            
+            const spacing = (L - n * b) / (n + 1); 
+            let x_center = -L / 2 + spacing + (b / 2); // Center of the first brace
+            
+            for (let i = 0; i < n; i++) { 
+                const x1_brace = x_center - b / 2; // Left edge of the brace
+                const x2_brace = x_center + b / 2; // Right edge of the brace
+                
+                // The fill color is uniform for all parts, as requested.
+                ctx.fillStyle = fillMaterialColor; 
+                
+                // 1. Draw Fill (Rectangular and Triangular parts)
+                if (h_rect > 0) { ctx.fillRect(x1_brace, t, b, h_rect); } // Rect fill
+                if (h > 0) { 
+                    ctx.beginPath(); 
+                    ctx.moveTo(x1_brace, t + h_rect); 
+                    ctx.lineTo(x2_brace, t + h_rect); 
+                    ctx.lineTo(x_center, t + H); 
+                    ctx.closePath(); 
+                    ctx.fill();
+                }
+                
+                // 2. Draw OUTLINE (TOP LAYER)
+                if (h_rect > 0) { ctx.strokeRect(x1_brace, t, b, h_rect); } // Rect outline
+                if (h > 0) { // Triangle outline
+                    ctx.beginPath(); 
+                    ctx.moveTo(x1_brace, t + h_rect); 
+                    ctx.lineTo(x2_brace, t + h_rect); 
+                    ctx.lineTo(x_center, t + H); 
+                    ctx.closePath(); 
+                    ctx.stroke();
+                }
+                
+                x_center += b + spacing; 
+            }
+            
+            // Draw Neutral Axis
+            ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 2 / scale; ctx.setLineDash([8 / scale, 4 / scale]); ctx.beginPath(); ctx.moveTo(-L / 2 - dimOffset, y_bar); ctx.lineTo(L / 2 + dimOffset, y_bar); ctx.stroke(); ctx.setLineDash([]);
+            
+            const y_bar_px = oy - y_bar * scale; 
+            const sb_left_px = ox - (L/2) * scale;
+            
+            ctx.restore(); 
+            
+            // Draw Neutral Axis Label
+            ctx.fillStyle = '#ef4444'; ctx.font = `600 13px 'Inter'`; ctx.textAlign = 'left'; ctx.textBaseline = 'top'; 
+            const y_bar_label_x = sb_left_px - (dimOffset * scale) - 10; 
+            ctx.fillText(`y_bar = ${y_bar.toFixed(2)} mm`, Math.max(10, y_bar_label_x), y_bar_px + 8); 
+        }
+
+        function drawBraceDetail(t, b, H, h, y_bar) { 
+            const w = canvasDetail.clientWidth; if (w <= 0) return; canvasDetail.width = w;
+            const h_rect = Math.max(0, H - h); const topPadding = 35; const bottomPadding = 35; const sidePadding = 60; 
+            const drawingHeight = H + t; const drawingWidth = b; const availableWidth = w - (sidePadding * 2);
+            let scale; if (drawingWidth > 0 && availableWidth > 0) { scale = (availableWidth / drawingWidth) * 0.7; } else if (drawingHeight > 0) { const tempAvailableHeight = Math.max(100, w * 0.8); scale = (tempAvailableHeight / drawingHeight) * 0.7; } else { scale = 5; }
+            if (scale <= 0 || !isFinite(scale)) scale = 5;
+            const scaledDrawingHeight = drawingHeight * scale; const tight_h_canvas = scaledDrawingHeight + topPadding + bottomPadding;
+            const h_canvas = tight_h_canvas; canvasDetail.height = h_canvas; canvasDetail.style.height = `${h_canvas}px`;
+            ctxDetail.clearRect(0, 0, w, h_canvas);
+            const oy = tight_h_canvas - bottomPadding; const ox = w / 2;
+            ctxDetail.save(); ctxDetail.translate(ox, oy); ctxDetail.scale(scale, -scale); 
+            const dimOffset = 10 / scale; const dimLineStyle = '#6b7280'; const dimTextStyle = '#1f2937'; 
+            const plateWidth = Math.max(b * 1.5, 10 / scale); 
+            
+            const fillMaterialColor = '#f9fafb'; // Light grey/off-white for all wood sections
+            
+            // Draw Soundboard Plate
+            ctxDetail.fillStyle = fillMaterialColor; 
+            ctxDetail.strokeStyle = '#2563eb'; ctxDetail.lineWidth = 1.5 / scale; ctxDetail.fillRect(-plateWidth / 2, 0, plateWidth, t); ctxDetail.strokeRect(-plateWidth / 2, 0, plateWidth, t);
+            
+            // Draw Brace Detail
+            ctxDetail.fillStyle = fillMaterialColor; 
+            ctxDetail.strokeStyle = '#059669'; ctxDetail.lineWidth = 1.5 / scale;
+            if (h_rect > 0) { ctxDetail.fillRect(-b / 2, t, b, h_rect); ctxDetail.strokeRect(-b / 2, t, b, h_rect); }
+            if (h > 0) { 
+                ctxDetail.beginPath(); 
+                ctxDetail.moveTo(-b / 2, t + h_rect); 
+                ctxDetail.lineTo(b / 2, t + h_rect); 
+                ctxDetail.lineTo(0, t + H); 
+                ctxDetail.closePath(); 
+                ctxDetail.fill(); 
+                ctxDetail.stroke(); 
+            }
+            
+            // Draw Neutral Axis
+            ctxDetail.strokeStyle = '#ef4444'; ctxDetail.lineWidth = 2 / scale; ctxDetail.setLineDash([8 / scale, 4 / scale]);
+            ctxDetail.beginPath(); ctxDetail.moveTo(-plateWidth / 2 - dimOffset, y_bar); ctxDetail.lineTo(plateWidth / 2 + dimOffset, y_bar); ctxDetail.stroke(); ctxDetail.setLineDash([]);
+            
+            const brace_left_px = ox - (b / 2) * scale; const brace_right_px = ox + (b / 2) * scale;
+            const t_top_px = oy - t * scale; const H_top_px = oy - (t + H) * scale; const h_rect_top_px = oy - (t + h_rect) * scale;
+            const plate_right_px = ox + (plateWidth / 2) * scale; const origin_y_px = oy; const y_bar_px = oy - y_bar * scale; 
+            ctxDetail.restore(); 
+            ctxDetail.strokeStyle = dimLineStyle; ctxDetail.fillStyle = dimTextStyle; ctxDetail.lineWidth = 1; ctxDetail.font = `600 12px 'Inter'`; ctxDetail.textBaseline = 'middle';
+            const dimOffsetPx = dimOffset * scale / 2; 
+            ctxDetail.textAlign = 'center'; const b_y_dim = origin_y_px + dimOffsetPx + 5; 
+            ctxDetail.beginPath(); ctxDetail.moveTo(brace_left_px, origin_y_px + 2); ctxDetail.lineTo(brace_left_px, b_y_dim + 3); ctxDetail.moveTo(brace_right_px, origin_y_px + 2); ctxDetail.lineTo(brace_right_px, b_y_dim + 3); ctxDetail.moveTo(brace_left_px, b_y_dim); ctxDetail.lineTo(brace_right_px, b_y_dim); ctxDetail.stroke();
+            ctxDetail.fillText(`b = ${b.toFixed(1)} mm`, ox, b_y_dim + 10);
+            const t_x_dim = plate_right_px + dimOffsetPx + 5; ctxDetail.textAlign = 'left';
+            ctxDetail.beginPath(); ctxDetail.moveTo(plate_right_px - 2, origin_y_px); ctxDetail.lineTo(t_x_dim + 3, origin_y_px); ctxDetail.moveTo(plate_right_px - 2, t_top_px); ctxDetail.lineTo(t_x_dim + 3, t_top_px); ctxDetail.moveTo(t_x_dim, origin_y_px); ctxDetail.lineTo(t_x_dim, t_top_px); ctxDetail.stroke();
+            ctxDetail.fillText(`t = ${t.toFixed(1)} mm`, t_x_dim + 5, (origin_y_px + t_top_px) / 2);
+            const H_x_dim = brace_right_px + dimOffsetPx + 5; 
+            if (H > 0) { ctxDetail.textAlign = 'left'; ctxDetail.beginPath(); ctxDetail.moveTo(brace_right_px, t_top_px); ctxDetail.lineTo(H_x_dim + 3, t_top_px); ctxDetail.moveTo(brace_right_px, H_top_px); ctxDetail.lineTo(H_x_dim + 3, H_top_px); ctxDetail.moveTo(H_x_dim, t_top_px); ctxDetail.lineTo(H_x_dim, H_top_px); ctxDetail.stroke(); ctxDetail.fillText(`H = ${H.toFixed(1)} mm`, H_x_dim + 5, (t_top_px + H_top_px) / 2); }
+            const h_x_dim = brace_left_px - dimOffsetPx - 5; 
+            if (h > 0 && h < H) { ctxDetail.textAlign = 'right'; ctxDetail.beginPath(); ctxDetail.moveTo(brace_left_px, h_rect_top_px); ctxDetail.lineTo(h_x_dim - 3, h_rect_top_px); ctxDetail.moveTo(brace_left_px, H_top_px); ctxDetail.lineTo(h_x_dim - 3, H_top_px); ctxDetail.moveTo(h_x_dim, H_top_px); ctxDetail.lineTo(h_x_dim, h_rect_top_px); ctxDetail.stroke(); ctxDetail.fillText(`h = ${h.toFixed(1)} mm`, h_x_dim - 5, (h_rect_top_px + H_top_px) / 2); }
+            const y_bar_x_dim = brace_left_px - dimOffsetPx - 5; ctxDetail.fillStyle = '#ef4444'; ctxDetail.font = `600 12px 'Inter'`; ctxDetail.textAlign = 'right'; ctxDetail.textBaseline = 'middle';
+            ctxDetail.fillText(`y_bar = ${y_bar.toFixed(2)}`, y_bar_x_dim, y_bar_px);
+        }
+
+        // --- Event Listeners ---
+        const allInputs = simSection.querySelectorAll('input[type="range"]');
+        allInputs.forEach(input => {
+            input.addEventListener('input', calculateAndUpdate);
+        });
+
+        // --- Initial Call ---
+        setTimeout(calculateAndUpdate, 0);
+
+        // --- Resize Redraw ---
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(calculateAndUpdate, 100);
+        });
+
+    })();
+    </script>
+</body>
+</html>

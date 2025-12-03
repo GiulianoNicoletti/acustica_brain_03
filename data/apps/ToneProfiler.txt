@@ -1,0 +1,1531 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Iulius Guitars - Acoustic Guitar Tone Profiler</title>
+
+    
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    
+
+    <style>
+
+        /* BASE STYLES RETAINED */
+
+        #iulius-sim-container { font-family: 'Inter', sans-serif; background-color: #f3f4f6; color: #1f2937; }
+
+        #iulius-sim-container *, #iulius-sim-container *::before, #iulius-sim-container *::after { box-sizing: border-box; }
+
+        #iulius-sim-container .container { width: 100%; margin-left: auto; margin-right: auto; padding: 1rem; }
+
+        @media (min-width: 1024px) { #iulius-sim-container .container { max-width: 1024px; padding: 2rem; } }
+
+        #iulius-sim-container h2 { font-size: 1.5rem; line-height: 2rem; font-weight: 700; color: #111827; }
+
+        #iulius-sim-container h3 { font-size: 1.25rem; line-height: 1.75rem; font-weight: 600; color: #1f2937; }
+
+        #iulius-sim-container .mb-6 { margin-bottom: 1.5rem; }
+
+        #iulius-sim-container .mt-1 { margin-top: 0.25rem; }
+
+        #iulius-sim-container .space-y-6 > :not([hidden]) ~ :not([hidden]) { margin-top: 1.5rem; }
+
+        #iulius-sim-container .space-y-4 > :not([hidden]) ~ :not([hidden]) { margin-top: 1rem; }
+
+        #iulius-sim-container .w-full { width: 100%; }
+
+        #iulius-sim-container .p-6 { padding: 1.5rem; }
+
+        #iulius-sim-container .bg-white { background-color: #ffffff; }
+
+        #iulius-sim-container .bg-gray-50 { background-color: #f9fafb; }
+
+        #iulius-sim-container .bg-gray-200 { background-color: #e5e7eb; }
+
+        #iulius-sim-container .rounded-2xl { border-radius: 1rem; }
+
+        #iulius-sim-container .rounded-xl { border-radius: 0.75rem; }
+
+        #iulius-sim-container .rounded-lg { border-radius: 0.5rem; }
+
+        #iulius-sim-container .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05); }
+
+        #iulius-sim-container .border-b { border-bottom-width: 1px; }
+
+        #iulius-sim-container .border-gray-200 { border-color: #e5e7eb; }
+
+        #iulius-sim-container .grid { display: grid; }
+
+        #iulius-sim-container .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+        #iulius-sim-container .gap-4 { gap: 1rem; }
+
+        @media (min-width: 1024px) { #iulius-sim-container .lg\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); } #iulius-sim-container .lg\:col-span-1 { grid-column: span 1 / span 1; } #iulius-sim-container .lg\:col-span-2 { grid-column: span 2 / span 2; } }
+
+        #iulius-sim-container .self-start { align-self: flex-start; }
+
+        #iulius-sim-container .flex { display: flex; }
+
+        #iulius-sim-container .justify-between { justify-content: space-between; }
+
+        #iulius-sim-container .font-semibold { font-weight: 600; }
+
+        #iulius-sim-container .text-gray-500 { color: #6b7280; }
+
+        #iulius-sim-container .text-blue-600 { color: #2563eb; }
+
+        #iulius-sim-container input[type="range"] { -webkit-appearance: none; appearance: none; width: 100%; height: 0.5rem; background-color: #e5e7eb; border-radius: 0.5rem; cursor: pointer; margin-top: 0.5rem; }
+
+        #iulius-sim-container input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 20px; height: 20px; background: #3b82f6; border-radius: 9999px; transition: background-color 0.2s; }
+
+        #iulius-sim-container .sim-btn { width: 100%; font-weight: 700; padding: 0.5rem 1rem; border-radius: 0.5rem; transition: all 0.2s; box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05); color: white; border: none; cursor: pointer; }
+
+        #iulius-sim-container .sim-btn-primary { background-color: #3b82f6; }
+
+        #iulius-sim-container .result-card { background-color: #eff6ff; border-radius: 0.75rem; padding: 1rem; }
+
+        #iulius-sim-container .result-label { font-size: 0.875rem; font-weight: 500; color: #1e40af; display: block; line-height: 1.3; }
+
+        #iulius-sim-container .result-value { font-size: 1.5rem; font-weight: 700; color: #1d4ed8; line-height: 1.25; }
+
+        #iulius-sim-container .result-unit { font-size: 0.875rem; font-weight: 500; color: #1e40af; margin-left: 0.375rem; }
+
+        #iulius-sim-container .result-flex { display: flex; align-items: baseline; padding-top: 0.5rem; }
+
+        #iulius-sim-container .canvas-container-3d { position: relative; width: 100%; aspect-ratio: 16 / 10.8; background-color: #f9fafb; overflow: hidden; }
+
+        #threejs-3d-container { width: 100%; height: 100%; }
+
+        #style-prediction-list { list-style: none; padding: 0; margin: 0; }
+
+        /* Style list modified for clean horizontal rank/score display */
+
+        #style-prediction-list li { 
+
+            padding: 0.5rem 0; 
+
+            border-bottom: 1px solid #e5e7eb; 
+
+            font-weight: 500; 
+
+            color: #1f2937; 
+
+            display: flex; 
+
+            justify-content: space-between;
+
+            align-items: center;
+
+        }
+
+        #style-prediction-list li:last-child { border-bottom: none; }
+
+        /* .style-rank is effectively removed/hidden in JS, but keeping the class for styling simplicity */
+
+        .style-rank { display: none; } 
+
+        .min-max-label { text-align: center; font-size: 0.75rem; color: #6b7280; margin-top: 0.5rem; }
+
+        #iulius-sim-container .bg-yellow-50 { background-color: #fef3c7; }
+
+        #iulius-sim-container .text-yellow-800 { color: #92400e; }
+
+        #iulius-sim-container .text-yellow-700 { color: #d97706; }
+
+        #iulius-sim-container .bg-green-50 { background-color: #d1fae5; }
+
+        #iulius-sim-container .text-green-800 { color: #065f46; }
+
+        #iulius-sim-container .text-green-700 { color: #047857; }
+
+        .slider-title { display: flex; justify-content: space-between; font-medium; color: #374151; }
+
+        .slider-title span:first-child { font-weight: 600; }
+
+        .slider-title span:last-child { font-weight: 600; color: #2563eb; }
+
+        .monopole-legend { font-size: 0.8rem; color: #374151; font-weight: 500; margin-bottom: 0.5rem; }
+
+
+
+        /* Custom text sprite class for 3D labels */
+
+        .label-sprite {
+
+            color: #1f2937; 
+
+            font-family: 'Inter', sans-serif;
+
+            font-size: 10px; 
+
+            font-weight: 500; 
+
+            padding: 2px 4px;
+
+            pointer-events: none;
+
+            position: absolute;
+
+            white-space: nowrap;
+
+        }
+
+
+
+        /* NEW STYLES for the result card look */
+
+        #iulius-sim-container .style-result-card {
+
+            background-color: #eff6ff;
+
+            border-radius: 0.75rem;
+
+            padding: 0.5rem 1rem;
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+        }
+
+
+
+        #iulius-sim-container .style-result-name {
+
+            font-size: 0.875rem;
+
+            font-weight: 500;
+
+            color: #1e40af;
+
+        }
+
+        
+
+        #iulius-sim-container .style-result-rank {
+
+            font-size: 1.25rem; /* Slightly smaller than main results */
+
+            font-weight: 700;
+
+            color: #1d4ed8;
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <div id="iulius-sim-container">
+
+        <div class="container">
+
+            <section id="acoustic-profiler" class="w-full bg-white rounded-2xl shadow-lg p-6 md:p-8">
+
+                <div class="text-left mb-6 pb-4 border-b border-gray-200">
+
+                    <h2>Acoustic Guitar Tone Profiler</h2>
+
+                    <p class="text-gray-500 mt-1">Map your monopole parameters to specific tone profiles and optimal playing styles.</p>
+
+                </div>
+
+
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
+
+
+
+                    <div class="lg:col-span-1 space-y-6 self-start">
+
+
+
+                        <div class="bg-gray-50 rounded-xl p-6 space-y-4">
+
+                            <h3>Monopole Parameters</h3>
+
+
+
+                            <div id="profiler-controls" class="space-y-4">
+
+
+
+                                <div>
+
+                                    <div class="slider-title">
+
+                                        <span>Equivalent Mass</span>
+
+                                        <span id="Meq-input-value">70 g</span>
+
+                                    </div>
+
+                                    <input type="range" id="Meq-input" min="30" max="110" step="1" value="70">
+
+                                    <div class="min-max-label flex justify-between">
+
+                                        <span>30 (Light)</span>
+
+                                        <span>110 (Heavy)</span>
+
+                                    </div>
+
+                                </div>
+
+
+
+                                <div>
+
+                                    <div class="slider-title">
+
+                                        <span>Equivalent Stiffness</span>
+
+                                        <span id="Keq-value">70 N/mm</span>
+
+                                    </div>
+
+                                    <input type="range" id="Keq" min="25" max="130" step="1" value="70">
+
+                                    <div class="min-max-label flex justify-between">
+
+                                        <span>25 (Soft)</span>
+
+                                        <span>130 (Stiff)</span>
+
+                                    </div>
+
+                                </div>
+
+
+
+                                <div>
+
+                                    <div class="slider-title">
+
+                                        <span>Back Activity</span>
+
+                                        <span id="BackActivity-value">Intermediate</span>
+
+                                    </div>
+
+                                    <input type="range" id="BackActivity" min="0" max="2" step="1" value="1">
+
+                                    <div class="min-max-label flex justify-between">
+
+                                        <span>Passive</span>
+
+                                        <span>Active</span>
+
+                                    </div>
+
+                                </div>
+
+
+
+                            </div>
+
+                        </div>
+
+
+
+                        <div class="bg-gray-50 rounded-xl p-6 space-y-4">
+
+                            <h3 class="text-base font-semibold text-gray-900" style="font-size: 1.25rem; line-height: 1.75rem; color: #1f2937;">Suited Playing Styles</h3>
+
+                            <ul id="style-prediction-list" class="space-y-2">
+
+                                <div class="style-result-card"><span class="style-result-name">---</span> <span class="style-result-rank">---</span></div>
+
+                            </ul>
+
+                        </div>
+
+
+
+                    </div>
+
+
+
+                    <div class="lg:col-span-2 space-y-4">
+
+                        <div class="canvas-container-3d">
+
+                            <div id="threejs-3d-container"></div>
+
+                        </div>
+
+
+
+                        <div class="bg-gray-50 rounded-xl p-6 space-y-4">
+
+                            <h3 class="text-base font-semibold text-gray-900" style="font-size: 1.25rem; line-height: 1.75rem; color: #1f2937;">Calculated Monopole Tone Profile</h3>
+
+                            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+
+
+
+                                <div class="result-card">
+
+                                    <label class="result-label">Uncoupled Fs</label>
+
+                                    <div class="result-flex">
+
+                                        <span id="Fs-result" class="result-value">---</span>
+
+                                        <span class="result-unit">Hz</span>
+
+                                    </div>
+
+                                </div>
+
+
+
+                                <div class="result-card">
+
+                                    <label class="result-label">Monopole Mobility</label>
+
+                                    <div class="result-flex">
+
+                                        <span id="Mobility-result" class="result-value">---</span>
+
+                                        <span class="result-unit">s/kg (x 10⁻³)</span>
+
+                                    </div>
+
+                                </div>
+
+
+
+                                <div class="result-card bg-yellow-50 text-yellow-800">
+
+                                    <label class="result-label text-yellow-800">Wolf Note Tendency</label>
+
+                                    <div class="result-flex">
+
+                                        <span id="WolfNote-result" class="result-value text-yellow-700">---</span>
+
+                                    </div>
+
+                                </div>
+
+
+
+                                <div class="result-card bg-green-50 text-green-800">
+
+                                    <label class="result-label text-green-800">Dynamic Character</label>
+
+                                    <div class="result-flex">
+
+                                        <span id="Dynamic-result" class="result-value text-green-700">---</span>
+
+                                    </div>
+
+                                </div>
+
+
+
+                            </div>
+
+                        </div>
+
+
+
+                    </div>
+
+
+
+                </div>
+
+            </section>
+
+
+
+            <div id="iulius-sim-footer">
+
+                © Iulius Guitars – Giuliano Nicoletti. These tools are shared for your personal growth. If you'd like to share them, just ask first.
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+<script>
+
+    // --- Core Application Logic (Final Text Clarity Polish) ---
+
+    (() => {
+
+        const dom = {
+
+            Meq_input_slider: document.getElementById('Meq-input'),
+
+            Meq_input_value: document.getElementById('Meq-input-value'),
+
+            Keq_slider: document.getElementById('Keq'),
+
+            Keq_value: document.getElementById('Keq-value'),
+
+            BackActivity_slider: document.getElementById('BackActivity'),
+
+            BackActivity_value: document.getElementById('BackActivity-value'),
+
+
+
+            Fs_result: document.getElementById('Fs-result'),
+
+            Mobility_result: document.getElementById('Mobility-result'),
+
+            WolfNote_result: document.getElementById('WolfNote-result'),
+
+            Dynamic_result: document.getElementById('Dynamic-result'),
+
+
+
+            style_list: document.getElementById('style-prediction-list'),
+
+            threejs_container: document.getElementById('threejs-3d-container')
+
+        };
+
+
+
+        const CONSTANTS = {
+
+            // Conversions
+
+            NM_TO_N: 1000,
+
+            G_TO_KG: 1000,
+
+
+
+            // Damping factor for descriptive text only
+
+            BACK_ACTIVITY_LABELS: ['Passive', 'Intermediate', 'Active'],
+
+            BACK_ACTIVITY_DAMPING_FACTOR: [0.85, 1.0, 1.15],
+
+
+
+            MOBILITY_SCALE_FACTOR: 1000,
+
+
+
+            // GLOBAL TOLERANCES (Used only as default/fallback now)
+
+            M_TOLERANCE: 15, // ± 15 g (Radius X)
+
+            K_TOLERANCE: 15, // ± 15 N/mm (Radius Y)
+
+
+
+            // Style Targets
+
+            STYLE_ZONES: {
+
+                "Jazz":            {Meq: 65, Keq_target: 80, Fs: 180, color: '#9400D3', M_tol: 12, K_tol: 12},
+
+                "Fingerpicking":   {Meq: 60, Keq_target: 60, Fs: 177, color: '#7FFF00', M_tol: 18, K_tol: 19},
+
+                "Recording Session":{Meq: 70, Keq_target: 70, Fs: 172, color: '#20B2AA', M_tol: 18, K_tol: 19},
+
+                "Folk":            {Meq: 80, Keq_target: 80, Fs: 178, color: '#6B8E23', M_tol: 20, K_tol: 20},
+
+                "Live Playing":    {Meq: 100, Keq_target: 120, Fs: 174, color: '#FF4500', M_tol: 15, K_tol: 15},
+
+                "Bluegrass":       {Meq: 65, Keq_target: 110, Fs: 216, color: '#0000FF', M_tol: 15, K_tol: 15},
+
+                "Flatpicking":     {Meq: 75, Keq_target: 120, Fs: 191, color: '#FF0000', M_tol: 15, K_tol: 15},
+
+                "Strumming":       {Meq: 95, Keq_target: 100, Fs: 177, color: '#FFC300', M_tol: 15, K_tol: 15}
+
+            },
+
+
+
+            AXIS_RANGES: {
+
+                Meq: { min: 40, max: 120, label: "Equivalent Mass (g)" },
+
+                Keq: { min: 35, max: 140, label: "Equivalent Stiffness (N/mm)" },
+
+                Fs: { min: 100, max: 250, label: "Uncoupled Frequency (Hz)" }
+
+            },
+
+            MOBILITY_THRESHOLD_HIGH: 14.5,
+
+            MOBILITY_THRESHOLD_MEDIUM: 12.0,
+
+            MAX_NORMALIZED_DISTANCE: Math.sqrt(3),
+
+            MAX_STYLES_TO_SHOW: 3
+
+        };
+
+
+
+        // --- Monopole Calculation Logic (NO CHANGE) ---
+
+        function calculateFs(Meq_g, Keq_Nmm) {
+
+            const Keq_Nm = Keq_Nmm * CONSTANTS.NM_TO_N;
+
+            const Meq_kg = Meq_g / CONSTANTS.G_TO_KG;
+
+            if (Meq_kg <= 0) return 0;
+
+            const innerTerm = Keq_Nm / Meq_kg;
+
+            let Fs = (1 / (2 * Math.PI)) * Math.sqrt(innerTerm);
+
+            return Fs;
+
+        }
+
+
+
+        function calculateMobility(Meq_g, Keq_Nmm) {
+
+            const Meq_kg = Meq_g / CONSTANTS.G_TO_KG;
+
+            const Keq_Nm = Keq_Nmm * CONSTANTS.NM_TO_N;
+
+            const baseImpedance = Math.sqrt(Meq_kg * Keq_Nm);
+
+            let Mobility = CONSTANTS.MOBILITY_SCALE_FACTOR / baseImpedance;
+
+            return Mobility;
+
+        }
+
+
+
+        function getWolfNoteAndDynamic(Mobility, backActivityIndex) {
+
+            let wolfNote = "Low";
+
+            let dynamic = "High Headroom";
+
+            if (Mobility >= CONSTANTS.MOBILITY_THRESHOLD_HIGH) {
+
+                wolfNote = "High";
+
+                dynamic = "Very Sensitive";
+
+            } else if (Mobility >= CONSTANTS.MOBILITY_THRESHOLD_MEDIUM) {
+
+                wolfNote = "Medium";
+
+                dynamic = "Balanced";
+
+            }
+
+
+
+            if (backActivityIndex === 2) {
+
+                dynamic = dynamic.includes("Very Sensitive") ? "Balanced/Focused" : "Full/Mellow";
+
+                if (wolfNote.includes("High")) {
+
+                    wolfNote = "Mitigated";
+
+                } else if (wolfNote.includes("Medium")) {
+
+                    wolfNote = "Low";
+
+                } else {
+
+                    wolfNote = "Very Low";
+
+                }
+
+            } else if (backActivityIndex === 0) {
+
+                if (Mobility >= CONSTANTS.MOBILITY_THRESHOLD_HIGH) {
+
+                    dynamic = "Strong Projection";
+
+                } else if (Mobility >= CONSTANTS.MOBILITY_THRESHOLD_MEDIUM) {
+
+                    dynamic = "Punchy";
+
+                } else {
+
+                    dynamic = "Balanced";
+
+                }
+
+
+
+                if (wolfNote.includes("High")) {
+
+                    wolfNote = "Very High";
+
+                } else if (wolfNote.includes("Medium")) {
+
+                    wolfNote = "Medium, warning";
+
+                } else {
+
+                    wolfNote = "Low";
+
+                }
+
+            }
+
+            return { wolfNote, dynamic };
+
+        }
+
+
+
+        function findBestStyles(Meq_g, Keq_Nmm, Fs_uncoupled) {
+
+            const profile = { Meq: Meq_g, Keq: Keq_Nmm, Fs: Fs_uncoupled };
+
+            const scores = [];
+
+
+
+            const R = CONSTANTS.AXIS_RANGES;
+
+            const Meq_range = R.Meq.max - R.Meq.min;
+
+            const Keq_range = R.Keq.max - R.Keq.min;
+
+            const Fs_range = R.Fs.max - R.Fs.min;
+
+
+
+            const normalize = (value, min, range) => (value - min) / range;
+
+
+
+            for (const [style, target] of Object.entries(CONSTANTS.STYLE_ZONES)) {
+
+                if (profile.Fs < R.Fs.min || profile.Fs > R.Fs.max) {
+
+                    scores.push({ style, fitPercentage: 0.0 });
+
+                    continue;
+
+                }
+
+                const dx = normalize(profile.Meq, R.Meq.min, Meq_range) - normalize(target.Meq, R.Meq.min, Meq_range);
+
+                const dy = normalize(profile.Keq, R.Keq.min, Keq_range) - normalize(target.Keq_target, R.Keq.min, Keq_range);
+
+                const dz = normalize(profile.Fs, R.Fs.min, Fs_range) - normalize(target.Fs, R.Fs.min, Fs_range);
+
+                const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+                let fitPercentage = ((CONSTANTS.MAX_NORMALIZED_DISTANCE - distance) / CONSTANTS.MAX_NORMALIZED_DISTANCE) * 100;
+
+                fitPercentage = Math.max(0, fitPercentage);
+
+                scores.push({ style, fitPercentage });
+
+            }
+
+
+
+            scores.sort((a, b) => b.fitPercentage - a.fitPercentage);
+
+            return scores.slice(0, CONSTANTS.MAX_STYLES_TO_SHOW);
+
+        }
+
+        // --- End Monopole Calculation Logic ---
+
+
+
+        // --- 2D Visualization Logic (UPDATED FOR DPR & STABILITY) ---
+
+        let canvas2D, ctx;
+
+        const PLOT_PADDING = 35; // Logical CSS pixels
+
+
+
+        function mapValueToCanvas(value, min, max, canvasDim_css, isYAxis = false) {
+
+            const range = max - min;
+
+            if (range === 0) return 0;
+
+            const plotArea = canvasDim_css - 2 * PLOT_PADDING;
+
+            const normalized = (value - min) / range;
+
+            if (isYAxis) {
+
+                return PLOT_PADDING + (1 - normalized) * plotArea;
+
+            } else {
+
+                return PLOT_PADDING + normalized * plotArea;
+
+            }
+
+        }
+
+
+
+        function deltaToPixel(deltaValue, min, max, canvasDim_css) {
+
+            const range = max - min;
+
+            const plotArea = canvasDim_css - 2 * PLOT_PADDING;
+
+            return (deltaValue / range) * plotArea;
+
+        }
+
+
+
+        // MODIFIED: Initialize canvas with DPR scaling and adds the resize listener once
+
+        function init2DCanvas() {
+
+            const container = dom.threejs_container;
+
+            
+
+            // Remove previous canvas if it exists
+
+            while (container.firstChild) {
+
+                container.removeChild(container.firstChild);
+
+            }
+
+            
+
+            // 1. Get Device Pixel Ratio
+
+            const dpr = window.devicePixelRatio || 1; 
+
+            
+
+            // 2. Set display size (CSS size)
+
+            canvas2D = document.createElement('canvas');
+
+            const W_css = container.clientWidth;
+
+            const H_css = container.clientHeight;
+
+            canvas2D.style.width = W_css + 'px';
+
+            canvas2D.style.height = H_css + 'px';
+
+            
+
+            // 3. Set actual drawing buffer size
+
+            canvas2D.width = W_css * dpr;
+
+            canvas2D.height = H_css * dpr;
+
+            
+
+            container.appendChild(canvas2D);
+
+            ctx = canvas2D.getContext('2d');
+
+            
+
+            // 4. Scale the context
+
+            ctx.scale(dpr, dpr);
+
+            
+
+            // Add RESIZE listener ONLY if it doesn't exist yet to prevent stack overflow
+
+            if (!window.hasResizeListener) {
+
+                window.addEventListener('resize', () => {
+
+                    // Re-run init to reset canvas dimensions and scaling
+
+                    init2DCanvas(); 
+
+                    // Re-run update to redraw content
+
+                    updateProfiler();
+
+                });
+
+                window.hasResizeListener = true;
+
+            }
+
+        }
+
+        
+
+        // MODIFIED: Accepts CSS dimensions W and H
+
+        function draw2DPlotFramework(W, H) {
+
+            if (!ctx) return;
+
+            const R = CONSTANTS.AXIS_RANGES;
+
+
+
+            // 1. Clear and Draw Background
+
+            ctx.fillStyle = '#f9fafb';
+
+            ctx.fillRect(0, 0, W, H);
+
+
+
+            // 2. Draw Axes (Thinner Line)
+
+            ctx.strokeStyle = '#374151';
+
+            ctx.lineWidth = 1;
+
+            ctx.beginPath();
+
+            ctx.moveTo(PLOT_PADDING, PLOT_PADDING);
+
+            ctx.lineTo(PLOT_PADDING, H - PLOT_PADDING);
+
+            ctx.lineTo(W - PLOT_PADDING, H - PLOT_PADDING);
+
+            ctx.stroke();
+
+
+
+            // 3. Draw Axis Labels (Better Contrast)
+
+            ctx.fillStyle = '#000000'; // BLACK for high contrast
+
+            ctx.font = '14px Inter, sans-serif';
+
+            // X-Axis Title (Mass)
+
+            ctx.textAlign = 'center';
+
+            ctx.fillText(R.Meq.label, W / 2, H - 5);
+
+
+
+            // Y-Axis Title (Stiffness)
+
+            ctx.save();
+
+            ctx.translate(10, H / 2);
+
+            ctx.rotate(-Math.PI / 2);
+
+            ctx.fillText(R.Keq.label, 0, 0);
+
+            ctx.restore();
+
+
+
+            // 4. Draw Ticks and Grid Lines
+
+            ctx.font = '10px Inter, sans-serif';
+
+            for (let i = 0; i <= 5; i++) {
+
+                const massValue = R.Meq.min + (R.Meq.max - R.Meq.min) * (i / 5);
+
+                const KeqValue = R.Keq.min + (R.Keq.max - R.Keq.min) * (i / 5);
+
+
+
+                // X-Axis Ticks (Mass)
+
+                const x = mapValueToCanvas(massValue, R.Meq.min, R.Meq.max, W, false);
+
+                ctx.textAlign = 'center';
+
+                ctx.fillText(massValue.toFixed(0), x, H - PLOT_PADDING + 15);
+
+
+
+                // Y-Axis Ticks (Stiffness)
+
+                const y = mapValueToCanvas(KeqValue, R.Keq.min, R.Keq.max, H, true);
+
+                ctx.textAlign = 'right';
+
+                ctx.fillText(KeqValue.toFixed(0), PLOT_PADDING - 5, y + 3);
+
+
+
+                // Draw Grid Lines (Thinner)
+
+                ctx.strokeStyle = '#e5e7eb';
+
+                ctx.lineWidth = 0.5;
+
+
+
+                if (i > 0 && i < 5) {
+
+                    ctx.beginPath(); // Horizontal Grid (Stiffness)
+
+                    ctx.moveTo(PLOT_PADDING, y);
+
+                    ctx.lineTo(W - PLOT_PADDING, y);
+
+                    ctx.stroke();
+
+
+
+                    ctx.beginPath(); // Vertical Grid (Mass)
+
+                    ctx.moveTo(x, PLOT_PADDING);
+
+                    ctx.lineTo(x, H - PLOT_PADDING);
+
+                    ctx.stroke();
+
+                }
+
+            }
+
+
+
+            // 5. Draw Frequency Isolines (Thinner Line, Distinct Colors)
+
+            const Fs_to_plot = [120, 150, 180, 210];
+
+            const constant_factor = Math.pow(2 * Math.PI, 2) / (CONSTANTS.NM_TO_N * CONSTANTS.G_TO_KG);
+
+
+
+            ctx.lineWidth = 0.8; // THINNER ISOLINE
+
+
+
+            // Define a set of distinct colors for the isolines
+
+            const isolineColors = [
+
+                'rgba(124, 252, 0, 0.9)', // 120 Hz (Green)
+
+                'rgba(255, 215, 0, 0.9)', // 150 Hz (Gold)
+
+                'rgba(255, 140, 0, 0.9)', // 180 Hz (Orange)
+
+                'rgba(200, 0, 0, 0.9)'    // 210 Hz (Red)
+
+            ];
+
+
+
+            Fs_to_plot.forEach((Fs, index) => {
+
+                ctx.beginPath();
+
+                ctx.strokeStyle = isolineColors[index % isolineColors.length];
+
+
+
+                let first = true;
+
+                let firstMeq = null;
+
+                let lastMeq = null;
+
+                
+
+                // Find visible segment and plot line
+
+                for (let Meq_g = R.Meq.min; Meq_g <= R.Meq.max; Meq_g += 1) {
+
+                    const Keq_Nmm = Math.pow(Fs, 2) * constant_factor * Meq_g;
+
+
+
+                    if (Keq_Nmm >= R.Keq.min && Keq_Nmm <= R.Keq.max) {
+
+                        const x = mapValueToCanvas(Meq_g, R.Meq.min, R.Meq.max, W, false);
+
+                        const y = mapValueToCanvas(Keq_Nmm, R.Keq.min, R.Keq.max, H, true);
+
+
+
+                        if (first) {
+
+                            ctx.moveTo(x, y);
+
+                            first = false;
+
+                            firstMeq = Meq_g;
+
+                        } else {
+
+                            ctx.lineTo(x, y);
+
+                        }
+
+                        lastMeq = Meq_g;
+
+                    }
+
+                }
+
+                ctx.stroke();
+
+
+
+                // --- MODIFIED: Draw label near the right edge of the visible segment ---
+
+                if (firstMeq !== null && lastMeq !== null) {
+
+                    // Target the last (rightmost) Meq point calculated in the loop
+
+                    const targetMeq = lastMeq; 
+
+                    const Keq_target = Math.pow(Fs, 2) * constant_factor * targetMeq;
+
+
+
+                    // Ensure target is still within the visible Y-range before labeling
+
+                    if (Keq_target >= R.Keq.min && Keq_target <= R.Keq.max) {
+
+                        
+
+                        const lx = mapValueToCanvas(targetMeq, R.Meq.min, R.Meq.max, W, false);
+
+                        const ly = mapValueToCanvas(Keq_target, R.Keq.min, R.Keq.max, H, true);
+
+
+
+                        const label = `${Fs} Hz`;
+
+                        ctx.font = 'bold 12px Inter, sans-serif';
+
+                        const textW = ctx.measureText(label).width;
+
+                        
+
+                        // Define fixed padding and height for the label box
+
+                        const padX = 8;
+
+                        const padY = 6;
+
+                        const rectW = textW + padX * 2;
+
+                        const rectH = 16 + padY;
+
+
+
+                        // Position the box 5 pixels to the right of the plot line
+
+const SHIFT_150HZ = -30; // Shift for 150Hz
+const SHIFT_120HZ = -50; // Shift for 120Hz (more dramatic shift)
+const DEFAULT_OFFSET = 5;
+
+let offsetX = DEFAULT_OFFSET; 
+if (Fs === 150) {
+    offsetX = SHIFT_150HZ; 
+} else if (Fs === 120) {
+    offsetX = SHIFT_120HZ;
+}
+
+const rectX = lx + offsetX; 
+const rectY = ly - rectH / 2; // Vertically centered on the isoline
+
+
+
+                        // Draw semi-opaque rounded rectangle background
+
+                        ctx.save();
+
+                        ctx.fillStyle = 'rgba(255,255,255,0.88)';
+
+                        
+
+                        // rounded rect drawing logic
+
+                        const r = 4;
+
+                        ctx.beginPath();
+
+                        ctx.moveTo(rectX + r, rectY);
+
+                        ctx.arcTo(rectX + rectW, rectY, rectX + rectW, rectY + rectH, r);
+
+                        ctx.arcTo(rectX + rectW, rectY + rectH, rectX, rectY + rectH, r);
+
+                        ctx.arcTo(rectX, rectY + rectH, rectX, rectY, r);
+
+                        ctx.arcTo(rectX, rectY, rectX + rectW, rectY, r);
+
+                        ctx.closePath();
+
+                        ctx.fill();
+
+
+
+                        // Draw text in line color
+
+                        ctx.fillStyle = ctx.strokeStyle;
+
+                        ctx.textAlign = 'left'; // Align text to the left edge of the box
+
+                        ctx.textBaseline = 'middle';
+
+                        ctx.fillText(label, rectX + padX, rectY + rectH / 2);
+
+
+
+                        ctx.restore();
+
+                    }
+
+                }
+
+            });
+
+        }
+
+
+
+        // MODIFIED: Accepts CSS dimensions W and H
+
+        function drawStyleZones2D(W, H) {
+
+            const R = CONSTANTS.AXIS_RANGES;
+
+
+
+            for (const [name, data] of Object.entries(CONSTANTS.STYLE_ZONES)) {
+
+                const meqTol = data.M_tol;
+
+                const keqTol = data.K_tol;
+
+
+
+                const radiusXPx = deltaToPixel(meqTol, R.Meq.min, R.Meq.max, W);
+
+                const radiusYPx = deltaToPixel(keqTol, R.Keq.min, R.Keq.max, H);
+
+
+
+                const centerX = mapValueToCanvas(data.Meq, R.Meq.min, R.Meq.max, W, false);
+
+                const centerY = mapValueToCanvas(data.Keq_target, R.Keq.min, R.Keq.max, H, true);
+
+                const color = data.color;
+
+
+
+                // Corrected Label Y Offset for better visibility
+
+                let labelYOffset = -radiusYPx - 7; 
+
+                if (name === "Fingerpicking" || name === "Recording Session") {
+
+                    labelYOffset = radiusYPx + 10;
+
+                }
+
+
+
+                ctx.beginPath();
+
+                ctx.ellipse(centerX, centerY, radiusXPx, radiusYPx, 0, 0, 2 * Math.PI);
+
+                ctx.fillStyle = color + '30';
+
+                ctx.fill();
+
+
+
+                ctx.strokeStyle = color;
+
+                ctx.lineWidth = 1;
+
+                ctx.stroke();
+
+
+
+                ctx.beginPath();
+
+                ctx.arc(centerX, centerY, 3, 0, 2 * Math.PI);
+
+                ctx.fillStyle = color;
+
+                ctx.fill();
+
+
+
+                ctx.fillStyle = '#000000';
+
+                ctx.font = 'bold 10px Inter, sans-serif';
+
+                ctx.textAlign = 'center';
+
+                ctx.fillText(name, centerX, centerY + labelYOffset);
+
+            }
+
+        }
+
+
+
+        // MODIFIED: Now retrieves CSS dimensions and calls drawing functions
+
+        function update2DPlot(Meq_g, Keq_Nmm, Fs_uncoupled) {
+
+            if (!ctx || !canvas2D) return;
+
+
+
+            // Get current CSS dimensions
+
+            const W = canvas2D.clientWidth;
+
+            const H = canvas2D.clientHeight;
+
+
+
+            // Redraw framework and zones, passing dimensions
+
+            draw2DPlotFramework(W, H);
+
+            drawStyleZones2D(W, H);
+
+
+
+            const R = CONSTANTS.AXIS_RANGES;
+
+
+
+            // Map user's input point (Meq, Keq)
+
+            const x = mapValueToCanvas(Meq_g, R.Meq.min, R.Meq.max, W, false);
+
+            const y = mapValueToCanvas(Keq_Nmm, R.Keq.min, R.Keq.max, H, true);
+
+
+
+            // Check if user point is within the new visible bounds
+
+            const isVisible = (Meq_g >= R.Meq.min && Meq_g <= R.Meq.max &&
+
+                                Keq_Nmm >= R.Keq.min && Keq_Nmm <= R.Keq.max);
+
+
+
+            if (isVisible) {
+
+                // 1. Draw Projection Lines (dashed) (Thinner Line)
+
+                ctx.strokeStyle = '#2563eb';
+
+                ctx.lineWidth = 0.8;
+
+                ctx.setLineDash([4, 4]);
+
+
+
+                ctx.beginPath();
+
+                ctx.moveTo(x, y);
+
+                ctx.lineTo(x, H - PLOT_PADDING);
+
+                ctx.stroke();
+
+
+
+                ctx.beginPath();
+
+                ctx.moveTo(x, y);
+
+                ctx.lineTo(PLOT_PADDING, y);
+
+                ctx.stroke();
+
+
+
+                ctx.setLineDash([]);
+
+
+
+                // 2. Draw User Point (White/Blue dot)
+
+                ctx.beginPath();
+
+                ctx.arc(x, y, 9, 0, 2 * Math.PI);
+
+                ctx.fillStyle = '#FFFFFF';
+
+                ctx.fill();
+
+                ctx.strokeStyle = '#2563eb';
+
+                ctx.lineWidth = 3;
+
+                ctx.stroke();
+
+            }
+
+        }
+
+
+
+        function update3DPlot(Meq_g, Keq_Nmm, Fs_uncoupled) {
+
+            update2DPlot(Meq_g, Keq_Nmm, Fs_uncoupled);
+
+        }
+
+        // --- End 2D Visualization Logic ---
+
+
+
+        // --- Main Update Function ---
+
+        function updateProfiler() {
+
+            const Meq_g = parseFloat(dom.Meq_input_slider.value);
+
+            const Keq_Nmm = parseFloat(dom.Keq_slider.value);
+
+            const backActivityIndex = parseInt(dom.BackActivity_slider.value);
+
+
+
+            const Fs_uncoupled = calculateFs(Meq_g, Keq_Nmm);
+
+
+
+            dom.Meq_input_value.textContent = `${Meq_g} g`;
+
+            dom.Keq_value.textContent = `${Keq_Nmm} N/mm`;
+
+            dom.BackActivity_value.textContent = CONSTANTS.BACK_ACTIVITY_LABELS[backActivityIndex];
+
+
+
+            if (Fs_uncoupled <= 0) {
+
+                dom.Fs_result.textContent = Fs_uncoupled.toFixed(1) + " (OUT)";
+
+                dom.Mobility_result.textContent = "N/A";
+
+                dom.WolfNote_result.textContent = "N/A";
+
+                dom.Dynamic_result.textContent = "N/A";
+
+                dom.style_list.innerHTML = '<div class="style-result-card"><span class="style-result-name">Parameters out of range.</span> <span class="style-result-rank">---</span></div>';
+
+            } else {
+
+                const Mobility = calculateMobility(Meq_g, Keq_Nmm);
+
+                const { wolfNote, dynamic } = getWolfNoteAndDynamic(Mobility, backActivityIndex);
+
+                const bestStyles = findBestStyles(Meq_g, Keq_Nmm, Fs_uncoupled);
+
+
+
+                dom.Fs_result.textContent = Fs_uncoupled.toFixed(1);
+
+                dom.Mobility_result.textContent = Mobility.toFixed(2);
+
+                dom.WolfNote_result.textContent = wolfNote;
+
+                dom.Dynamic_result.textContent = dynamic;
+
+
+
+                dom.style_list.innerHTML = bestStyles.map((item, index) => {
+
+                    const rank = index + 1;
+
+                    return `<div class="style-result-card"><span class="style-result-name">${item.style}</span> <span class="style-result-rank">#${rank}</span></div>`;
+
+                }).join('');
+
+            }
+
+
+
+            // 4. Update 2D Visualization
+
+            update3DPlot(Meq_g, Keq_Nmm, Fs_uncoupled);
+
+        }
+
+
+
+        // --- Event Listeners and Init ---
+
+        function addEventListeners() {
+
+            dom.Meq_input_slider.addEventListener('input', updateProfiler);
+
+            dom.Keq_slider.addEventListener('input', updateProfiler);
+
+            dom.BackActivity_slider.addEventListener('input', updateProfiler);
+
+        }
+
+
+
+        function init() {
+
+            init2DCanvas(); // Initialize the new 2D canvas with DPR scaling
+
+            addEventListeners();
+
+            updateProfiler(); // Initial calculation and plot
+
+        }
+
+
+
+        init();
+
+
+
+    })();
+
+</script>
+
+
+
+</body>
+
+</html>

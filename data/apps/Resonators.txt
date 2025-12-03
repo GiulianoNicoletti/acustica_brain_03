@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iulius Guitars - Resonator Interaction Simulator</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- Self-Contained CSS from your Existing Page --- */
+        #iulius-sim-container {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* bg-gray-100 */
+            color: #1f2937; /* text-gray-800 */
+        }
+
+        #iulius-sim-container *,
+        #iulius-sim-container *::before,
+        #iulius-sim-container *::after {
+            box-sizing: border-box;
+        }
+
+        #iulius-sim-container .container {
+            width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+            padding: 1rem; /* p-4 */
+        }
+        
+        @media (min-width: 640px) {
+            #iulius-sim-container .container { max-width: 640px; padding: 1.5rem; }
+        }
+        @media (min-width: 768px) {
+            #iulius-sim-container .container { max-width: 768px; }
+        }
+        @media (min-width: 1024px) {
+            #iulius-sim-container .container { max-width: 1024px; padding: 2rem; }
+        }
+        @media (min-width: 1280px) {
+            #iulius-sim-container .container { max-width: 1280px; }
+        }
+
+        #iulius-sim-container h1 { font-size: 1.875rem; line-height: 2.25rem; font-weight: 700; color: #111827; }
+        #iulius-sim-container h2 { font-size: 1.5rem; line-height: 2rem; font-weight: 700; color: #111827; }
+        #iulius-sim-container h3 { font-size: 1.25rem; line-height: 1.75rem; font-weight: 600; color: #1f2937; }
+
+        @media (min-width: 768px) {
+            #iulius-sim-container h1 { font-size: 2.25rem; line-height: 2.5rem; }
+        }
+
+        #iulius-sim-container .text-left { text-align: left; }
+        #iulius-sim-container .mb-6 { margin-bottom: 1.5rem; }
+        #iulius-sim-container .mb-4 { margin-bottom: 1rem; }
+        #iulius-sim-container .mt-1 { margin-top: 0.25rem; }
+        #iulius-sim-container .mt-2 { margin-top: 0.5rem; }
+        #iulius-sim-container .mt-4 { margin-top: 1rem; }
+        #iulius-sim-container .mt-6 { margin-top: 1.5rem; }
+        
+        #iulius-sim-container .space-y-12 > :not([hidden]) ~ :not([hidden]) { margin-top: 3rem; }
+        #iulius-sim-container .space-y-6 > :not([hidden]) ~ :not([hidden]) { margin-top: 1.5rem; }
+        #iulius-sim-container .space-x-2 > :not([hidden]) ~ :not([hidden]) { margin-left: 0.5rem; }
+        
+        #iulius-sim-container .w-full { width: 100%; }
+        #iulius-sim-container .h-2 { height: 0.5rem; }
+        #iulius-sim-container .p-6 { padding: 1.5rem; }
+        #iulius-sim-container .pb-4 { padding-bottom: 1rem; }
+
+        #iulius-sim-container .bg-white { background-color: #ffffff; }
+        #iulius-sim-container .bg-gray-50 { background-color: #f9fafb; }
+        #iulius-sim-container .bg-gray-200 { background-color: #e5e7eb; }
+
+        #iulius-sim-container .rounded-2xl { border-radius: 1rem; }
+        #iulius-sim-container .rounded-xl { border-radius: 0.75rem; }
+        #iulius-sim-container .rounded-lg { border-radius: 0.5rem; }
+        
+        #iulius-sim-container .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05); }
+
+        #iulius-sim-container .border-b { border-bottom-width: 1px; }
+        #iulius-sim-container .border-t { border-top-width: 1px; }
+        #iulius-sim-container .border-gray-200 { border-color: #e5e7eb; }
+        
+        #iulius-sim-container .grid { display: grid; }
+        #iulius-sim-container .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+        
+        #iulius-sim-container .gap-6 { gap: 1.5rem; }
+
+        @media (min-width: 768px) {
+            #iulius-sim-container .md\:p-8 { padding: 2rem; }
+            #iulius-sim-container .md\:gap-8 { gap: 2rem; }
+        }
+
+        @media (min-width: 1024px) {
+            #iulius-sim-container .lg\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+            #iulius-sim-container .lg\:col-span-1 { grid-column: span 1 / span 1; }
+            #iulius-sim-container .lg\:col-span-2 { grid-column: span 2 / span 2; }
+        }
+
+        #iulius-sim-container .self-start { align-self: flex-start; }
+        #iulius-sim-container .flex { display: flex; }
+        #iulius-sim-container .justify-between { justify-content: space-between; }
+
+        #iulius-sim-container .font-semibold { font-weight: 600; }
+        #iulius-sim-container .font-medium { font-weight: 500; }
+
+        #iulius-sim-container .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+        #iulius-sim-container .text-gray-500 { color: #6b7280; }
+        #iulius-sim-container .text-gray-700 { color: #374151; }
+        #iulius-sim-container .text-blue-600 { color: #2563eb; }
+        #iulius-sim-container .text-emerald-600 { color: #059669; }
+        #iulius-sim-container .text-purple-600 { color: #7c3aed; }
+        #iulius-sim-container .text-white { color: #ffffff; }
+
+        #iulius-sim-container .appearance-none { appearance: none; }
+        #iulius-sim-container .cursor-pointer { cursor: pointer; }
+
+        /* --- Original Slider Thumb Style --- */
+        #iulius-sim-container .slider-thumb::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none;
+            width: 20px; height: 20px;
+            background: #3b82f6; cursor: pointer;
+            border-radius: 9999px; transition: background-color 0.2s;
+        }
+        #iulius-sim-container .slider-thumb::-moz-range-thumb {
+            width: 20px; height: 20px;
+            background: #3b82f6; cursor: pointer;
+            border-radius: 9999px; border: none;
+            transition: background-color 0.2s;
+        }
+        #iulius-sim-container .slider-thumb:disabled::-webkit-slider-thumb { background: #9ca3af; }
+        #iulius-sim-container .slider-thumb:disabled::-moz-range-thumb { background: #9ca3af; }
+
+        /* --- Slider Thumb Colors for R2 and R3 --- */
+        #iulius-sim-container .slider-thumb-green::-webkit-slider-thumb { background: #10b981; }
+        #iulius-sim-container .slider-thumb-green::-moz-range-thumb { background: #10b981; }
+        #iulius-sim-container .slider-thumb-purple::-webkit-slider-thumb { background: #8b5cf6; }
+        #iulius-sim-container .slider-thumb-purple::-moz-range-thumb { background: #8b5cf6; }
+
+        #iulius-sim-container .sim-btn {
+            width: 100%; font-weight: 700;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            transition: background-color 0.2s, color 0.2s, opacity 0.2s;
+            box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05);
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        #iulius-sim-container .sim-btn:disabled { 
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        #iulius-sim-container .sim-btn-tertiary { background-color: #374151; }
+        #iulius-sim-container .sim-btn-tertiary:hover:not(:disabled) { background-color: #1f2937; }
+        
+        #iulius-sim-container .canvas-container {
+            position: relative; /* Added for logo positioning */
+            width: 100%;
+            aspect-ratio: 16 / 10.8; /* 20% taller than 16/9 */
+            background-color: #f9fafb;
+            border-radius: 0.75rem;
+            padding: 0.5rem;
+        }
+        
+        #iulius-sim-container canvas { 
+            display: block; 
+            width: 100%; 
+            height: 100%; 
+        }
+
+        /* --- Specific CSS for this App --- */
+        #iulius-sim-container .sim-btn-small {
+            width: auto;
+            font-weight: 600;
+            font-size: 0.875rem;
+            padding: 0.25rem 0.75rem;
+        }
+        #iulius-sim-container .phase-inactive {
+            background-color: #10b981; /* green */
+        }
+        #iulius-sim-container .phase-inactive:hover:not(:disabled) {
+            background-color: #059669;
+        }
+        #iulius-sim-container .phase-active {
+            background-color: #f59e0b; /* orange */
+        }
+        #iulius-sim-container .phase-active:hover:not(:disabled) {
+            background-color: #d97706;
+        }
+        #iulius-sim-container .pt-4 { padding-top: 1rem; }
+
+        /* --- NEW: Logo on graph (from ref app) --- */
+        #iulius-sim-container #iulius-logo-graph {
+            position: absolute;
+            bottom: 65px; /* From reference app */
+            right: 28px; /* From reference app */
+            width: 50px;
+            height: auto;
+            opacity: 0.2;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        /* --- NEW: Footer (from ref app) --- */
+        #iulius-sim-footer {
+            text-align: center;
+            padding: 1rem;
+            margin-top: 2rem;
+            color: #6b7280; /* text-gray-500 */
+            font-size: 0.875rem; /* text-sm */
+            line-height: 1.25rem;
+            font-family: 'Inter', sans-serif;
+        }
+
+    </style>
+</head>
+<body>
+    
+    <div id="iulius-sim-container">
+        <div class="container">
+            <div class="space-y-12">
+                
+                <section id="interaction-simulator" class="w-full bg-white rounded-2xl shadow-lg p-6 md:p-8">
+                    
+                    <div class="text-left mb-6 pb-4 border-b border-gray-200">
+                        <h2>Resonators Interaction Simulator</h2>
+                        <p class="text-gray-500 mt-1">Simulate the summation of up to 3 resonators. Adjust their frequency, amplitude, and phase.</p>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
+                        
+                        <div class="lg:col-span-1 bg-gray-50 rounded-xl p-6 space-y-6 self-start">
+                            <h3>Controls</h3>
+                            
+                            <div class="pt-4 border-t border-gray-200">
+                                <h3 class="text-blue-600">Resonator 1</h3>
+                                <div class="mt-4">
+                                    <label class="flex justify-between font-medium text-gray-700">
+                                        <span>Frequency (f₁)</span>
+                                        <span id="f1-value" class="font-semibold text-blue-600">100 Hz</span>
+                                    </label>
+                                    <input type="range" id="f1" min="0" max="100" step="0.1" value="29.1" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb mt-2">
+                                </div>
+                                <div class="mt-4">
+                                    <label class="flex justify-between font-medium text-gray-700">
+                                        <span>Amplitude (A₁)</span>
+                                        <span id="a1-value" class="font-semibold text-blue-600">30.0 dB</span>
+                                    </label>
+                                    <input type="range" id="a1" min="0" max="40" step="0.5" value="30" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb mt-2">
+                                </div>
+                                <div class="mt-4 flex space-x-2">
+                                    <button id="on-off-1" class="sim-btn sim-btn-small phase-inactive text-white">On</button>
+                                    <button id="phase1" class="sim-btn sim-btn-small phase-inactive text-white">Phase: 0°</button>
+                                </div>
+                            </div>
+
+                            <div class="pt-4 border-t border-gray-200">
+                                <h3 class="text-emerald-600">Resonator 2</h3>
+                                <div class="mt-4">
+                                    <label class="flex justify-between font-medium text-gray-700">
+                                        <span>Frequency (f₂)</span>
+                                        <span id="f2-value" class="font-semibold text-emerald-600">200 Hz</span>
+                                    </label>
+                                    <input type="range" id="f2" min="0" max="100" step="0.1" value="41.7" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb slider-thumb-green mt-2">
+                                </div>
+                                <div class="mt-4">
+                                    <label class="flex justify-between font-medium text-gray-700">
+                                        <span>Amplitude (A₂)</span>
+                                        <span id="a2-value" class="font-semibold text-emerald-600">25.0 dB</span>
+                                    </label>
+                                    <input type="range" id="a2" min="0" max="40" step="0.5" value="25" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb slider-thumb-green mt-2">
+                                </div>
+                                <div class="mt-4 flex space-x-2">
+                                    <button id="on-off-2" class="sim-btn sim-btn-small phase-inactive text-white">On</button>
+                                    <button id="phase2" class="sim-btn sim-btn-small phase-inactive text-white">Phase: 0°</button>
+                                </div>
+                            </div>
+
+                            <div class="pt-4 border-t border-gray-200">
+                                <h3 class="text-purple-600">Resonator 3</h3>
+                                <div class="mt-4">
+                                    <label class="flex justify-between font-medium text-gray-700">
+                                        <span>Frequency (f₃)</span>
+                                        <span id="f3-value" class="font-semibold text-purple-600">400 Hz</span>
+                                    </label>
+                                    <input type="range" id="f3" min="0" max="100" step="0.1" value="54.2" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb slider-thumb-purple mt-2">
+                                </div>
+                                <div class="mt-4">
+                                    <label class="flex justify-between font-medium text-gray-700">
+                                        <span>Amplitude (A₃)</span>
+                                        <span id="a3-value" class="font-semibold text-purple-600">20.0 dB</span>
+                                    </label> <input type="range" id="a3" min="0" max="40" step="0.5" value="20" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb slider-thumb-purple mt-2">
+                                </div>
+                                <div class="mt-4 flex space-x-2">
+                                    <button id="on-off-3" class="sim-btn sim-btn-small phase-inactive text-white">On</button>
+                                    <button id="phase3" class="sim-btn sim-btn-small phase-inactive text-white">Phase: 0°</button>
+                                </div>
+                            </div>
+
+                            <div class="mt-6 pt-4 border-t border-gray-200">
+                                <button id="reset-all-btn" class="sim-btn sim-btn-tertiary">Reset All</button>
+                            </div>
+
+                        </div>
+
+                        <div class="lg:col-span-2 canvas-container">
+                            <canvas id="responseChart"></canvas>
+                            <img id="iulius-logo-graph" src="https://www.iuliusguitars.com/wp-content/uploads/2025/10/IuliusBlack.png" alt="Iulius Guitars Logo"> 
+                        </div>
+
+                    </div>
+                </section>
+                
+            </div> <div id="iulius-sim-footer">
+                © Iulius Guitars – Giuliano Nicoletti. These tools are shared for your personal growth. If you'd like to share them, just ask first.
+            </div>
+
+        </div> </div> <script>
+    // --- JavaScript remains unchanged ---
+    (() => {
+        const simSection = document.getElementById('interaction-simulator');
+        if (!simSection) return; // Don't run if the simulator isn't on the page
+
+        // --- DOM element references ---
+        const sliders = {
+            f1: simSection.querySelector('#f1'),
+            a1: simSection.querySelector('#a1'),
+            f2: simSection.querySelector('#f2'),
+            a2: simSection.querySelector('#a2'),
+            f3: simSection.querySelector('#f3'),
+            a3: simSection.querySelector('#a3')
+        };
+        const values = {
+            f1: simSection.querySelector('#f1-value'),
+            a1: simSection.querySelector('#a1-value'),
+            f2: simSection.querySelector('#f2-value'),
+            a2: simSection.querySelector('#a2-value'),
+            f3: simSection.querySelector('#f3-value'),
+            a3: simSection.querySelector('#a3-value')
+        };
+        const phaseBtns = [
+            simSection.querySelector('#phase1'),
+            simSection.querySelector('#phase2'),
+            simSection.querySelector('#phase3')
+        ];
+        const onOffBtns = [
+            simSection.querySelector('#on-off-1'),
+            simSection.querySelector('#on-off-2'),
+            simSection.querySelector('#on-off-3')
+        ];
+        const resetBtn = simSection.querySelector('#reset-all-btn');
+        const canvas = simSection.querySelector('#responseChart');
+        if (!canvas) return;
+        
+        const ctx = canvas.getContext('2d');
+        let responseChart;
+
+        // --- State & Physics Constants ---
+        let phaseSigns = [1, 1, 1]; // 1 for 0°, -1 for 180°
+        let resonatorOn = [true, true, true]; // On/Off state
+        const Q = 40;
+        const minFreq = 50;
+        const maxFreq = 500;
+        const logMin = Math.log10(minFreq);
+        const logMax = Math.log10(maxFreq);
+        const logRange = logMax - logMin;
+        const steps = 400; // Number of points on the chart
+        const OFF_DB = -200; // Value for "off" resonators
+
+        // --- UPDATED DEFAULTS ---
+        const defaults = {
+            f1: 90, a1: 30,
+            f2: 160, a2: 30,
+            f3: 300, a3: 30
+        };
+
+        // --- Helper Functions ---
+        
+        /** Converts a linear slider value (0-100) to a logarithmic frequency */
+        function getFreqFromSlider(sliderVal) {
+            const logVal = logMin + (sliderVal / 100) * logRange;
+            return Math.pow(10, logVal);
+        }
+
+        /** Converts a frequency to a linear slider value (0-100) */
+        function getSliderFromFreq(freqVal) {
+            const logVal = Math.log10(freqVal);
+            return (100 * (logVal - logMin) / logRange);
+        }
+
+        /**
+         * Calculates the complex response (Real, Imag) for Mobility (V/F)
+         * This uses a 2nd-order bandpass filter model, which has the
+         * correct +20dB/dec rise and -20dB/dec fall.
+         * H(ω) = K * [ j(ω/ωn)/Q ] / [ 1 - (ω/ωn)² + j(ω/ωn)/Q ]
+         * where K is the peak linear gain at resonance.
+         */
+        function calculateComplexResponse(freq, f_n, amp_dB, phase_sign) {
+            const r = freq / f_n; // ω/ωn
+            
+            // K (linear gain at peak)
+            const target_peak_linear = phase_sign * Math.pow(10, amp_dB / 20);
+
+            // Denominator terms
+            const denom_real = 1 - r * r;
+            const denom_imag = r / Q;
+            const denom_mag_sq = denom_real * denom_real + denom_imag * denom_imag;
+
+            // Numerator terms
+            // K * j(r/Q)
+            const num_real = 0;
+            const num_imag = target_peak_linear * (r / Q);
+
+            // Complex division: (num_real + j*num_imag) / (denom_real + j*denom_imag)
+            // = [ (num_real*denom_real + num_imag*denom_imag) + j*(num_imag*denom_real - num_real*denom_imag) ] / denom_mag_sq
+            
+            const real = (num_real * denom_real + num_imag * denom_imag) / denom_mag_sq;
+            const imag = (num_imag * denom_real - num_real * denom_imag) / denom_mag_sq;
+
+            return { real, imag };
+        }
+
+        /** Calculates magnitude in dB from a complex number */
+        function getDb(complex) {
+            const mag = Math.sqrt(complex.real * complex.real + complex.imag * complex.imag);
+            if (mag === 0 || !isFinite(mag)) return OFF_DB; // Avoid log(0) or NaN
+            return 20 * Math.log10(mag);
+        }
+
+
+        // --- Main Chart Update Logic ---
+
+        function updateChart() {
+            if (!responseChart) return; // Don't update if chart isn't initialized
+
+            // Get parameters from UI
+            const f1 = getFreqFromSlider(sliders.f1.value);
+            const a1 = resonatorOn[0] ? parseFloat(sliders.a1.value) : OFF_DB;
+            const f2 = getFreqFromSlider(sliders.f2.value);
+            const a2 = resonatorOn[1] ? parseFloat(sliders.a2.value) : OFF_DB;
+            const f3 = getFreqFromSlider(sliders.f3.value);
+            const a3 = resonatorOn[2] ? parseFloat(sliders.a3.value) : OFF_DB;
+
+            // Update value displays
+            values.f1.textContent = `${f1.toFixed(0)} Hz`;
+            values.a1.textContent = resonatorOn[0] ? `${a1.toFixed(1)} dB` : "Off";
+            values.f2.textContent = `${f2.toFixed(0)} Hz`;
+            values.a2.textContent = resonatorOn[1] ? `${a2.toFixed(1)} dB` : "Off";
+            values.f3.textContent = `${f3.toFixed(0)} Hz`;
+            values.a3.textContent = resonatorOn[2] ? `${a3.toFixed(1)} dB` : "Off";
+
+            // Prepare data arrays
+            const dataR1 = [];
+            const dataR2 = [];
+            const dataR3 = [];
+            const dataSum = [];
+
+            // Loop through frequencies
+            for (let i = 0; i <= steps; i++) {
+                const logFreq = logMin + (i / steps) * logRange;
+                const freq = Math.pow(10, logFreq);
+
+                // Calculate individual complex responses
+                const h1 = calculateComplexResponse(freq, f1, a1, phaseSigns[0]);
+                const h2 = calculateComplexResponse(freq, f2, a2, phaseSigns[1]);
+                const h3 = calculateComplexResponse(freq, f3, a3, phaseSigns[2]);
+
+                // Sum the complex responses
+                const sumComplex = {
+                    real: h1.real + h2.real + h3.real,
+                    imag: h1.imag + h2.imag + h3.imag
+                };
+
+                // Convert to dB and push to data arrays
+                dataR1.push({ x: freq, y: getDb(h1) });
+                dataR2.push({ x: freq, y: getDb(h2) });
+                dataR3.push({ x: freq, y: getDb(h3) });
+                dataSum.push({ x: freq, y: getDb(sumComplex) });
+            }
+
+            // Update chart datasets
+            responseChart.data.datasets[0].data = dataR1;
+            responseChart.data.datasets[1].data = dataR2;
+            responseChart.data.datasets[2].data = dataR3;
+            responseChart.data.datasets[3].data = dataSum;
+
+            responseChart.update('none'); 
+        }
+
+        // --- Event Handlers ---
+
+        function togglePhase(index) {
+            phaseSigns[index] *= -1; // Flip sign
+            const btn = phaseBtns[index];
+            
+            if (phaseSigns[index] === 1) {
+                btn.textContent = "Phase: 0°";
+                btn.classList.remove('phase-active');
+                btn.classList.add('phase-inactive');
+            } else {
+                btn.textContent = "Phase: 180°";
+                btn.classList.add('phase-active');
+                btn.classList.remove('phase-inactive');
+            }
+            updateChart(); // Recalculate
+        }
+
+        function toggleOnOff(index) {
+            resonatorOn[index] = !resonatorOn[index]; // Flip state
+            const isOn = resonatorOn[index];
+
+            // Get controls for this resonator
+            const f_slider = sliders['f' + (index+1)];
+            const a_slider = sliders['a' + (index+1)];
+            const phase_btn = phaseBtns[index];
+            const onOff_btn = onOffBtns[index];
+
+            // Enable/disable other controls
+            f_slider.disabled = !isOn;
+            a_slider.disabled = !isOn;
+            phase_btn.disabled = !isOn;
+
+            // Update button text and style
+            if (isOn) {
+                onOff_btn.textContent = "On";
+                onOff_btn.classList.remove('phase-active');
+                onOff_btn.classList.add('phase-inactive');
+            } else {
+                onOff_btn.textContent = "Off";
+                onOff_btn.classList.add('phase-active');
+                onOff_btn.classList.remove('phase-inactive');
+            }
+            updateChart(); // Recalculate
+        }
+
+        // --- UPDATED RESET FUNCTION ---
+        function resetSimulator() {
+            // Reset sliders to default values
+            sliders.f1.value = getSliderFromFreq(defaults.f1);
+            sliders.a1.value = defaults.a1;
+            sliders.f2.value = getSliderFromFreq(defaults.f2);
+            sliders.a2.value = defaults.a2;
+            sliders.f3.value = getSliderFromFreq(defaults.f3);
+            sliders.a3.value = defaults.a3;
+
+            // --- Set default phase state (all in phase) ---
+            phaseSigns = [1, 1, 1];
+            
+            phaseBtns.forEach((btn, i) => {
+                btn.textContent = "Phase: 0°";
+                btn.classList.remove('phase-active');
+                btn.classList.add('phase-inactive');
+                btn.disabled = false;
+            });
+            
+            // Reset On/Off state and buttons
+            resonatorOn = [true, true, true];
+            for (let i = 0; i < 3; i++) {
+                sliders['f' + (i+1)].disabled = false;
+                sliders['a' + (i+1)].disabled = false;
+                
+                onOffBtns[i].textContent = "On";
+                onOffBtns[i].classList.remove('phase-active');
+                onOffBtns[i].classList.add('phase-inactive');
+            }
+
+            updateChart();
+        }
+
+
+        // --- Chart Initialization ---
+
+        function initializeChart() {
+            if (!ctx) return;
+            
+            const uiFont = "'Inter', sans-serif";
+            Chart.defaults.font.family = uiFont;
+
+            responseChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    datasets: [
+                        {
+                            label: 'Resonator 1',
+                            data: [],
+                            borderColor: '#3b82f6', // Blue
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            tension: 0.1,
+                        },
+                        {
+                            label: 'Resonator 2',
+                            data: [],
+                            borderColor: '#10b981', // Green
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            pointRadius: 0,
+                            tension: 0.1,
+                        },
+                        {
+                            label: 'Resonator 3',
+                            data: [],
+                            borderColor: '#8b5cf6', // Purple
+                            borderWidth: 2,
+                            borderDash: [2, 2],
+                            pointRadius: 0,
+                            tension: 0.1,
+                        },
+                        {
+                            label: 'Total Sum',
+                            data: [],
+                            borderColor: '#f97316', // Orange
+                            borderWidth: 3,
+                            pointRadius: 0,
+                            tension: 0.1,
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            type: 'logarithmic',
+                            min: minFreq,
+                            max: maxFreq,
+                            title: { display: true, text: 'Frequency (Hz)', font: { size: 14 }, color: '#4b5563' },
+                            ticks: { 
+                                color: '#6b7280',
+                                callback: function(value, index, ticks) {
+                                    if (value === 50 || value === 100 || value === 200 || value === 500) {
+                                        return value.toString();
+                                    }
+                                }
+                             }
+                        },
+                        y: {
+                            min: -10,
+                            max: 40, 
+                            title: { display: true, text: 'Amplitude (dB)', font: { size: 14 }, color: '#4b5563' },
+                            ticks: { color: '#6b7280' }
+                        }
+                    },
+                    plugins: {
+                        legend: { 
+                            display: true,
+                            position: 'bottom',
+                            labels: {
+                                usePointStyle: true,
+                                pointStyle: 'line'
+                            }
+                        },
+                        tooltip: {
+                            enabled: true,
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                title: (tooltipItems) => {
+                                    const freq = parseFloat(tooltipItems[0].parsed.x).toFixed(1);
+                                    return `Frequency: ${freq} Hz`;
+                                },
+                                label: (context) => {
+                                    // Don't show tooltip for "Off" curves
+                                    if (context.raw.y <= OFF_DB + 10) return; 
+                                    const amp = parseFloat(context.raw.y).toFixed(2);
+                                    const label = context.dataset.label || '';
+                                    return `${label}: ${amp} dB`;
+                                }
+                            }
+                        }
+                    },
+                    interaction: { mode: 'index', intersect: false }
+                }
+            });
+
+            // Set initial slider positions and draw the chart
+            resetSimulator();
+        }
+
+        // --- Add Event Listeners ---
+        
+        // Sliders
+        for (const key in sliders) {
+            sliders[key].addEventListener('input', updateChart);
+        }
+
+        // Phase Buttons
+        phaseBtns[0].addEventListener('click', () => togglePhase(0));
+        phaseBtns[1].addEventListener('click', () => togglePhase(1));
+        phaseBtns[2].addEventListener('click', () => togglePhase(2));
+
+        // On/Off Buttons
+        onOffBtns[0].addEventListener('click', () => toggleOnOff(0));
+        onOffBtns[1].addEventListener('click', () => toggleOnOff(1));
+        onOffBtns[2].addEventListener('click', () => toggleOnOff(2));
+
+        // Reset Button
+        resetBtn.addEventListener('click', resetSimulator);
+        
+        // Initialize the chart when the page loads
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeChart);
+        } else {
+            initializeChart();
+        }
+
+    })();
+    </script>
+</body>
+</html>

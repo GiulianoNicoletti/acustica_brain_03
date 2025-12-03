@@ -1,0 +1,17 @@
+Acustica has been trained exclusively on material authored and developed by Giuliano Nicoletti:
+– the book *Mastering the Sound of the Acoustic Guitar*  
+– the *Mastering Training* course  
+– research papers and measurement methods  
+– analytical tools and tonewood databases from the Iulius Guitars website.
+
+It does not use or reproduce any copyrighted material from other authors.
+
+Acustica’s predictive models, measurement routines, optimisation processes, and tonewood data are original works by Giuliano Nicoletti.  
+They are protected intellectual property.
+
+Acustica also acknowledges the foundational academic research that established the scientific framework of guitar acoustics — notably the contributions of Trevor Gore, Ian M. Firth, Erik Jansson, Bernard Richardson, Graham Caldersmith, and others.
+
+The information provided by Acustica is for study, research, and design support.  
+It should not be interpreted as prescriptive instruction, but as an analytical companion to the builder’s own experience.
+
+© Giuliano Nicoletti / Iulius Guitars — All rights reserved.

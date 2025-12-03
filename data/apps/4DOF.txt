@@ -1,0 +1,1264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iulius Guitars - 4-DOF Acoustic Guitar Simulator</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- Base App CSS --- */
+        #iulius-sim-container {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            color: #1f2937;
+        }
+        #iulius-sim-container *,
+        #iulius-sim-container *::before,
+        #iulius-sim-container *::after {
+            box-sizing: border-box;
+        }
+        #iulius-sim-container .container {
+            width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+            padding: 1rem;
+        }
+        @media (min-width: 1024px) {
+            #iulius-sim-container .container { max-width: 1024px; padding: 2rem; }
+        }
+        @media (min-width: 1280px) {
+            #iulius-sim-container .container { max-width: 1280px; }
+        }
+        #iulius-sim-container h2 { font-size: 1.5rem; line-height: 2rem; font-weight: 700; color: #111827; }
+        #iulius-sim-container h3 { font-size: 1.25rem; line-height: 1.75rem; font-weight: 600; color: #1f2937; }
+        #iulius-sim-container .mb-6 { margin-bottom: 1.5rem; }
+        #iulius-sim-container .mt-1 { margin-top: 0.25rem; }
+        #iulius-sim-container .mt-6 { margin-top: 1.5rem; }
+        #iulius-sim-container .space-y-6 > :not([hidden]) ~ :not([hidden]) { margin-top: 1.5rem; }
+        #iulius-sim-container .space-y-4 > :not([hidden]) ~ :not([hidden]) { margin-top: 1rem; }
+        #iulius-sim-container .w-full { width: 100%; }
+        #iulius-sim-container .p-6 { padding: 1.5rem; }
+        #iulius-sim-container .pb-4 { padding-bottom: 1rem; }
+        #iulius-sim-container .bg-white { background-color: #ffffff; }
+        #iulius-sim-container .bg-gray-50 { background-color: #f9fafb; }
+        #iulius-sim-container .bg-gray-200 { background-color: #e5e7eb; }
+        #iulius-sim-container .rounded-2xl { border-radius: 1rem; }
+        #iulius-sim-container .rounded-xl { border-radius: 0.75rem; }
+        #iulius-sim-container .rounded-lg { border-radius: 0.5rem; }
+        #iulius-sim-container .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05); }
+        #iulius-sim-container .border-b { border-bottom-width: 1px; }
+        #iulius-sim-container .border-t { border-top-width: 1px; }
+        #iulius-sim-container .border-gray-200 { border-color: #e5e7eb; }
+        #iulius-sim-container .border-gray-300 { border-color: #d1d5db; }
+        #iulius-sim-container .grid { display: grid; }
+        #iulius-sim-container .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+        #iulius-sim-container .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        #iulius-sim-container .gap-6 { gap: 1.5rem; }
+        #iulius-sim-container .gap-4 { gap: 1rem; } /* Added from reference */
+        @media (min-width: 1024px) {
+            #iulius-sim-container .lg\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+            #iulius-sim-container .lg\:col-span-1 { grid-column: span 1 / span 1; }
+            #iulius-sim-container .lg\:col-span-2 { grid-column: span 2 / span 2; }
+        }
+        #iulius-sim-container .self-start { align-self: flex-start; }
+        #iulius-sim-container .flex { display: flex; }
+        #iulius-sim-container .items-center { align-items: center; }
+        #iulius-sim-container .items-baseline { align-items: baseline; } /* Added for result cards */
+        #iulius-sim-container .justify-between { justify-content: space-between; }
+        #iulius-sim-container .font-semibold { font-weight: 600; }
+        #iulius-sim-container .font-medium { font-weight: 500; }
+        #iulius-sim-container .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+        #iulius-sim-container .text-gray-500 { color: #6b7280; }
+        #iulius-sim-container .text-gray-700 { color: #374151; }
+        #iulius-sim-container .text-gray-900 { color: #111827; }
+        #iulius-sim-container .text-blue-600 { color: #2563eb; }
+        #iulius-sim-container .text-white { color: #ffffff; }
+        #iulius-sim-container .appearance-none { appearance: none; }
+        #iulius-sim-container .cursor-pointer { cursor: pointer; }
+        #iulius-sim-container .hidden { display: none; }
+
+        /* --- Sliders --- */
+        #iulius-sim-container input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 0.5rem; /* h-2 */
+            background-color: #e5e7eb; /* bg-gray-200 */
+            border-radius: 0.5rem; /* rounded-lg */
+            cursor: pointer;
+            margin-top: 0.5rem; /* mt-2 */
+        }
+        #iulius-sim-container input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none;
+            width: 20px; height: 20px;
+            background: #3b82f6;
+            border-radius: 9999px;
+            transition: background-color 0.2s;
+        }
+        #iulius-sim-container input[type="range"]::-moz-range-thumb {
+            width: 20px; height: 20px;
+            background: #3b82f6;
+            border-radius: 9999px; border: none;
+            transition: background-color 0.2s;
+        }
+        #iulius-sim-container .slider-thumb-green::-webkit-slider-thumb { background: #10b981; }
+        #iulius-sim-container .slider-thumb-green::-moz-range-thumb { background: #10b981; }
+
+        /* --- Buttons --- */
+        #iulius-sim-container .sim-btn {
+            width: 100%; font-weight: 700;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.2s;
+            box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05);
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        #iulius-sim-container .sim-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        #iulius-sim-container .sim-btn-tertiary { background-color: #374151; }
+        #iulius-sim-container .sim-btn-tertiary:hover:not(:disabled) { background-color: #1f2937; }
+        #iulius-sim-container .sim-btn-primary { background-color: #3b82f6; }
+        #iulius-sim-container .sim-btn-primary:hover:not(:disabled) { background-color: #2563eb; }
+        #iulius-sim-container .sim-btn-danger { background-color: #dc2626; }
+        #iulius-sim-container .sim-btn-danger:hover:not(:disabled) { background-color: #b91c1c; }
+
+        /* --- Canvas --- */
+        #iulius-sim-container .canvas-container {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16 / 10.8; 
+            background-color: #f9fafb;
+            border-radius: 0.75rem;
+            padding: 0.5rem;
+        }
+        #iulius-sim-container canvas { display: block; width: 100%; height: 100%; }
+        /* Logo on graph */
+        #iulius-sim-container #iulius-logo-graph {
+            position: absolute;
+            bottom: 65px; /* Adjust as needed for padding */
+            right: 28px; /* Adjust as needed for padding */
+            width: 50px; /* Smaller size */
+            height: auto;
+            opacity: 0.2; /* Transparency */
+            filter: 
+            z-index: 10; /* Ensure it's above the canvas but below tooltips */
+            pointer-events: none; /* Make sure it doesn't interfere with chart interactions */
+        }
+
+
+        /* --- Tabs & Lists --- */
+        #iulius-sim-container .sim-tab-btn {
+            padding: 0.5rem 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-bottom-width: 3px;
+            transition: all 0.2s;
+        }
+        #iulius-sim-container .sim-tab-btn-active { border-color: #2563eb; color: #2563eb; }
+        #iulius-sim-container .sim-tab-btn-inactive { border-color: transparent; color: #6b7280; }
+        #iulius-sim-container .sim-tab-btn-inactive:hover { border-color: #d1d5db; color: #1f2937; }
+        #iulius-sim-container .sim-listbox {
+            width: 100%;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            background-color: #ffffff;
+            padding: 0.5rem;
+            font-family: 'Inter', sans-serif;
+            color: #1f2937; /* <-- FIX APPLIED HERE */
+        }
+        #iulius-sim-container .sim-listbox:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.4);
+        }
+
+        /* --- Curve Toggle Switches --- */
+        #iulius-sim-container .curve-toggle {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        #iulius-sim-container .curve-toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        #iulius-sim-container .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 24px;
+            background-color: #ccc;
+            border-radius: 34px;
+            transition: background-color 0.2s;
+            margin-right: 0.75rem; /* 12px */
+        }
+        #iulius-sim-container .toggle-switch::before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            border-radius: 50%;
+            transition: transform 0.2s;
+        }
+        #iulius-sim-container .curve-toggle input:checked + .toggle-switch {
+            background-color: #2563eb; /* Blue */
+        }
+        #iulius-sim-container .curve-toggle input:checked + .toggle-switch[data-color="orange"] {
+            background-color: #f97316;
+        }
+        #iulius-sim-container .curve-toggle input:checked + .toggle-switch[data-color="green"] {
+            background-color: #10b981;
+        }
+        #iulius-sim-container .curve-toggle input:checked + .toggle-switch[data-color="purple"] {
+            background-color: #8b5cf6;
+        }
+        #iulius-sim-container .curve-toggle input:checked + .toggle-switch::before {
+            transform: translateX(16px);
+        }
+        #iulius-sim-container .toggle-label {
+            display: flex;
+            align-items: center;
+            color: #374151;
+        }
+        #iulius-sim-container .toggle-legend-line {
+            width: 20px;
+            height: 3px;
+            margin-right: 0.5rem;
+            border-radius: 2px;
+        }
+        #iulius-sim-container .legend-orange { background-color: #f97316; }
+        #iulius-sim-container .legend-blue { background-color: #3b82f6; }
+        #iulius-sim-container .legend-green { background-color: #10b981; border-top: 3px dashed #10b981; background-color: transparent; }
+        #iulius-sim-container .legend-purple { background-color: #8b5cf6; border-top: 3px dotted #8b5cf6; background-color: transparent; }
+
+        
+        /* --- START: Added Styles from Reference App --- */
+        #iulius-sim-container .result-card { 
+            background-color: #eff6ff; /* bg-blue-50 */
+            border-radius: 0.75rem; /* rounded-xl */
+            padding: 1rem; /* p-4 */
+        }
+        #iulius-sim-container .result-label { 
+            font-size: 0.875rem; /* text-sm */
+            font-weight: 500; /* font-medium */
+            color: #1e40af; /* text-blue-800 */
+            display: block; /* Make it a block for layout */
+            line-height: 1.3;
+        }
+        #iulius-sim-container .result-value { 
+            font-size: 1.5rem; /* text-2xl */
+            font-weight: 700; /* font-bold */
+            color: #1d4ed8; /* text-blue-700 */
+            line-height: 1.25; /* leading-tight */
+        }
+        #iulius-sim-container .result-unit { 
+            font-size: 0.875rem; /* text-sm */
+            font-weight: 500; /* font-medium */
+            color: #1e40af; /* text-blue-800 */
+            margin-left: 0.375rem; /* ml-1.5 */
+        }
+        #iulius-sim-container .result-flex {
+            display: flex;
+            align-items: baseline;
+            padding-top: 0.5rem; /* pt-2 */
+        }
+        /* Add the blue colors from reference */
+        #iulius-sim-container .bg-blue-50 { background-color: #eff6ff; }
+        #iulius-sim-container .text-blue-800 { color: #1e40af; }
+        #iulius-sim-container .text-blue-700 { color: #1d4ed8; }
+        /* --- END: Added Styles from Reference App --- */
+        
+
+        /* --- Footer --- */
+        #iulius-sim-footer {
+            text-align: center;
+            padding: 1rem;
+            margin-top: 2rem;
+            color: #6b7280; /* text-gray-500 */
+            font-size: 0.875rem; /* text-sm */
+            line-height: 1.25rem;
+            font-family: 'Inter', sans-serif; /* Matching subtitle font */
+        }
+    </style>
+</head>
+<body>
+    
+    <div id="iulius-sim-container">
+        <div class="container">
+            <section id="guitar-simulator" class="w-full bg-white rounded-2xl shadow-lg p-6 md:p-8">
+                
+                <div class="text-left mb-6 pb-4 border-b border-gray-200">
+                    <h2>4-DOF Acoustic Guitar Simulator</h2>
+                    <p class="text-gray-500 mt-1">Simulate the frequency response of an acoustic guitar using a 4-Degree-of-Freedom model.</p>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
+                    
+                    <div class="lg:col-span-1 space-y-6 self-start">
+
+                        <div class="bg-gray-50 rounded-xl p-6 space-y-4">
+                            <h3>Controls</h3>
+                            
+                            <div class="flex border-b border-gray-200">
+                                <button id="tab-btn-main" class="sim-tab-btn sim-tab-btn-active">Main</button>
+                                <button id="tab-btn-q" class="sim-tab-btn sim-tab-btn-inactive">Q Factor</button>
+                                <button id="tab-btn-mgmt" class="sim-tab-btn sim-tab-btn-inactive">Management</button>
+                            </div>
+
+                            <div id="tab-content-main" class="space-y-4">
+                                <div>
+                                    <label class="flex justify-between font-medium text-gray-700">
+                                        <span>Mass of top</span>
+                                        <span id="mt-value" class="font-semibold text-blue-600">75.0 g</span>
+                                    </label>
+                                    <input type="range" id="mt" min="5" max="150" step="0.1" value="75">
+                                </div>
+                                <div>
+                                    <label class="flex justify-between font-medium text-gray-700">
+                                        <span>Mass of back</span>
+                                        <span id="mb-value" class="font-semibold text-blue-600">40.0 g</span>
+                                    </label>
+                                    <input type="range" id="mb" min="5" max="150" step="0.1" value="40">
+                                </div>
+                                <div>
+                                    <label class="flex justify-between font-medium text-gray-700">
+                                        <span>Mass of sides</span>
+                                        <span id="ms-value" class="font-semibold text-blue-600">700.0 g</span>
+                                    </label>
+                                    <input type="range" id="ms" min="100" max="2000" step="1" value="700">
+                                </div>
+                                <div>
+                                    <label class="flex justify-between font-medium text-gray-700">
+                                        <span>Mass of sound hole air</span>
+                                        <span id="ma-value" class="font-semibold text-blue-600">0.90 g</span>
+                                    </label>
+                                    <input type="range" id="ma" min="0.1" max="3" step="0.01" value="0.9">
+                                </div>
+                                <div>
+                                    <label class="flex justify-between font-medium text-gray-700">
+                                        <span>Stiffness of top</span>
+                                        <span id="Kt-value" class="font-semibold text-blue-600">70 N/mm</span>
+                                    </label>
+                                    <input type="range" id="Kt" min="10" max="200" step="1" value="70">
+                                </div>
+                                <div>
+                                    <label class="flex justify-between font-medium text-gray-700">
+                                        <span>Stiffness of back</span>
+                                        <span id="Kb-value" class="font-semibold text-blue-600">120 N/mm</span>
+                                    </label>
+                                    <input type="range" id="Kb" min="10" max="200" step="1" value="120">
+                                </div>
+                                <div>
+                                    <label class="flex justify-between font-medium text-gray-700">
+                                        <span>Stiffness of sides</span>
+                                        <span id="Ks-value" class="font-semibold text-blue-600">120 N/mm</span>
+                                    </label>
+                                    <input type="range" id="Ks" min="20" max="500" step="1" value="120">
+                                </div>
+                                <div>
+                                    <label class="flex justify-between font-medium text-gray-700">
+                                        <span>Area of top</span>
+                                        <span id="At-value" class="font-semibold text-blue-600">380 cm²</span>
+                                    </label>
+                                    <input type="range" id="At" min="100" max="600" step="1" value="380">
+                                </div>
+                                <div>
+                                    <label class="flex justify-between font-medium text-gray-700">
+                                        <span>Area of back</span>
+                                        <span id="Ab-value" class="font-semibold text-blue-600">320 cm²</span>
+                                    </label>
+                                    <input type="range" id="Ab" min="100" max="600" step="1" value="320">
+                                </div>
+                                <div>
+                                    <label class="flex justify-between font-medium text-gray-700">
+                                        <span>Area of sides</span>
+                                        <span id="As-value" class="font-semibold text-blue-600">580 cm²</span>
+                                    </label>
+                                    <input type="range" id="As" min="300" max="1000" step="1" value="580">
+                                </div>
+                                <div>
+                                    <label class="flex justify-between font-medium text-gray-700">
+                                        <span>Area of sound hole</span>
+                                        <span id="Aa-value" class="font-semibold text-blue-600">70 cm²</span>
+                                    </label>
+                                    <input type="range" id="Aa" min="10" max="150" step="1" value="70">
+                                </div>
+                                <div>
+                                    <label class="flex justify-between font-medium text-gray-700">
+                                        <span>Volume of box</span>
+                                        <span id="V-value" class="font-semibold text-blue-600">15.0 L</span>
+                                    </label>
+                                    <input type="range" id="V" min="2" max="30" step="0.1" value="15">
+                                </div>
+                            </div>
+
+                            <div id="tab-content-q" class="space-y-4 hidden">
+                                <div>
+                                    <label class="flex justify-between font-medium text-gray-700">
+                                        <span>Q Factor, top (Qt)</span>
+                                        <span id="Qt-value" class="font-semibold text-green-600">35</span>
+                                    </label>
+                                    <input type="range" id="Qt" min="5" max="100" step="1" value="35" class="slider-thumb-green">
+                                </div>
+                                <div>
+                                    <label class="flex justify-between font-medium text-gray-700">
+                                        <span>Q Factor, back (Qb)</span>
+                                        <span id="Qb-value" class="font-semibold text-green-600">15</span>
+                                    </label>
+                                    <input type="range" id="Qb" min="5" max="100" step="1" value="15" class="slider-thumb-green">
+                                </div>
+                                <div>
+                                    <label class="flex justify-between font-medium text-gray-700">
+                                        <span>Q Factor, sides (Qs)</span>
+                                        <span id="Qs-value" class="font-semibold text-green-600">20</span>
+                                    </label>
+                                    <input type="range" id="Qs" min="5" max="100" step="1" value="20" class="slider-thumb-green">
+                                </div>
+                                <div>
+                                    <label class="flex justify-between font-medium text-gray-700">
+                                        <span>Q Factor, air (Qa)</span>
+                                        <span id="Qa-value" class="font-semibold text-green-600">40</span>
+                                    </label>
+                                    <div class="text-sm text-gray-500 mt-1" style="color: #6b7280;">(Calculated from Side Stiffness)</div>
+                                </div>
+                            </div>
+
+                            <div id="tab-content-mgmt" class="space-y-6 hidden">
+                                <div class="space-y-4">
+                                    <h3 class="text-base font-semibold text-gray-900">Curve Management</h3>
+                                    <select id="curve-list" size="5" class="sim-listbox"></select>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <button id="btn-set-ref" class="sim-btn sim-btn-primary">Set as Reference</button>
+                                        <button id="btn-save-curve" class="sim-btn sim-btn-primary">Save Curve</button>
+                                        <button id="btn-delete-curve" class="sim-btn sim-btn-danger">Delete Curve</button>
+                                        <button id="btn-clear-all" class="sim-btn sim-btn-danger">Clear All</button>
+                                    </div>
+                                </div>
+                                <div class="space-y-4">
+                                    <h3 class="text-base font-semibold text-gray-900">Configuration Management</h3>
+                                    <select id="config-list" size="4" class="sim-listbox"></select>
+                                    <div class="grid grid-cols-1 gap-4">
+                                        <button id="btn-load-config" class="sim-btn sim-btn-primary">Load Config</button>
+                                        <button id="btn-save-config" class="sim-btn sim-btn-primary">Save Config</button>
+                                        <button id="btn-delete-config" class="sim-btn sim-btn-danger">Delete Config</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 pt-4 border-t border-gray-200">
+                            <button id="reset-all-btn" class="sim-btn sim-btn-tertiary">Reset to Defaults</button>
+                        </div>
+
+                    </div>
+
+                    <div class="lg:col-span-2 space-y-4">
+                        
+                        <div class="canvas-container">
+                            <canvas id="responseChart"></canvas>
+                            <img id="iulius-logo-graph" src="https://www.iuliusguitars.com/wp-content/uploads/2025/10/IuliusBlack.png" alt="Iulius Guitars Logo"> 
+                        </div>
+                        
+                        <div class="bg-gray-50 rounded-xl p-6 space-y-4">
+                            
+                            <h3 class="text-base font-semibold text-gray-900" style="font-size: 1.25rem; line-height: 1.75rem; color: #1f2937;">Coupled modes</h3>
+                            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                                <div class="result-card">
+                                    <label class="result-label">Air mode T(1,1)1</label>
+                                    <div class="result-flex">
+                                        <span id="f_peak1_val" class="result-value">---</span>
+                                        <span class="result-unit">Hz</span>
+                                    </div>
+                                </div>
+                                <div class="result-card">
+                                    <label class="result-label">Top Monopole T(1,1)2</label>
+                                    <div class="result-flex">
+                                        <span id="f_peak2_val" class="result-value">---</span>
+                                        <span class="result-unit">Hz</span>
+                                    </div>
+                                </div>
+                                <div class="result-card">
+                                    <label class="result-label">Back Monopole T(1,1)3</label>
+                                    <div class="result-flex">
+                                        <span id="f_peak3_val" class="result-value">---</span>
+                                        <span class="result-unit">Hz</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <h3 class="text-base font-semibold text-gray-900 mt-6" style="font-size: 1.25rem; line-height: 1.75rem; color: #1f2937;">Uncoupled modes</h3>
+                            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                                <div class="result-card">
+                                    <label class="result-label">Air mode</label>
+                                    <div class="result-flex">
+                                        <span id="f_air_val" class="result-value">---</span>
+                                        <span class="result-unit">Hz</span>
+                                    </div>
+                                </div>
+                                <div class="result-card">
+                                    <label class="result-label">Top Monopole</label>
+                                    <div class="result-flex">
+                                        <span id="f_top_val" class="result-value">---</span>
+                                        <span class="result-unit">Hz</span>
+                                    </div>
+                                </div>
+                                <div class="result-card">
+                                    <label class="result-label">Back Monopole</label>
+                                    <div class="result-flex">
+                                        <span id="f_back_val" class="result-value">---</span>
+                                        <span class="result-unit">Hz</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 rounded-xl p-6 space-y-4">
+                            <h3 class="text-base font-semibold text-gray-900" style="font-size: 1.25rem; line-height: 1.75rem; color: #1f2937;">Display Curves</h3>
+                            <div class="grid grid-cols-2 gap-4">
+                                <label class="curve-toggle">
+                                    <input type="checkbox" id="toggle-total" checked>
+                                    <span class="toggle-switch" data-color="orange"></span>
+                                    <span class="toggle-label"><div class="toggle-legend-line legend-orange"></div>Total Sum</span>
+                                </label>
+                                <label class="curve-toggle">
+                                    <input type="checkbox" id="toggle-top">
+                                    <span class="toggle-switch" data-color="blue"></span>
+                                    <span class="toggle-label"><div class="toggle-legend-line legend-blue"></div>Top</span>
+                                </label>
+                                <label class="curve-toggle">
+                                    <input type="checkbox" id="toggle-back">
+                                    <span class="toggle-switch" data-color="green"></span>
+                                    <span class="toggle-label"><div class="toggle-legend-line legend-green"></div>Back</span>
+                                </label>
+                                <label class="curve-toggle">
+                                    <input type="checkbox" id="toggle-air">
+                                    <span class="toggle-switch" data-color="purple"></span>
+                                    <span class="toggle-label"><div class="toggle-legend-line legend-purple"></div>Air</span>
+                                </label>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+            
+            <div id="iulius-sim-footer">
+                © Iulius Guitars – Giuliano Nicoletti. These tools are shared for your personal growth. If you'd like to share them, just ask first.
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+    // Self-executing function to avoid polluting the global scope
+    (() => {
+        const simSection = document.getElementById('guitar-simulator');
+        if (!simSection) return;
+
+        // --- State Object ---
+        const app = {
+            params: {},
+            params_def: {
+                // SI units
+                // === MODIFIED DEFAULTS ===
+                mt: 0.075, mb: 0.040, ms: 0.700, ma: 0.0009,
+                At: 0.0380, Ab: 0.0320, As: 0.0580, Aa: 0.0070,
+                Kt: 70000, Kb: 120000, Ks: 120000, V: 0.015,
+                Qt: 35, Qb: 15, Qs: 20
+                // === END MODIFIED DEFAULTS ===
+            },
+            physics: {
+                c0: 343, rho: 1.205, pref: 2e-5, F: 0.4, r: 1.0,
+                // Constants for Ks -> Qa mapping
+                Ks_min_si: 20000,  // 20 N/mm
+                Ks_max_si: 500000, // 500 N/mm
+                Qa_min: 20.0,      // Q_air at min Ks
+                Qa_max: 116.0      // Q_air at max Ks (calibrated so 120 N/mm -> Qa=40)
+            },
+            chart: null,
+            saved_curves: [],
+            saved_configs: {},
+            CONFIG_STORAGE_KEY: 'guitar_4dof_configs',
+            CURVE_STORAGE_KEY: 'guitar_4dof_curves',
+            SAVED_CURVE_COLORS: ['#10b981', '#8b5cf6', '#f59e0b', '#ec4899', '#14b8a6', '#6366f1']
+        };
+
+        // --- DOM element references ---
+        const dom = {
+            sliders: {
+                mt: simSection.querySelector('#mt'), mb: simSection.querySelector('#mb'), ms: simSection.querySelector('#ms'), ma: simSection.querySelector('#ma'),
+                At: simSection.querySelector('#At'), Ab: simSection.querySelector('#Ab'), As: simSection.querySelector('#As'), Aa: simSection.querySelector('#Aa'),
+                Kt: simSection.querySelector('#Kt'), Kb: simSection.querySelector('#Kb'), Ks: simSection.querySelector('#Ks'), V: simSection.querySelector('#V'),
+                Qt: simSection.querySelector('#Qt'), Qb: simSection.querySelector('#Qb'), Qs: simSection.querySelector('#Qs') 
+            },
+            values: {
+                mt: simSection.querySelector('#mt-value'), mb: simSection.querySelector('#mb-value'), ms: simSection.querySelector('#ms-value'), ma: simSection.querySelector('#ma-value'),
+                At: simSection.querySelector('#At-value'), Ab: simSection.querySelector('#Ab-value'), As: simSection.querySelector('#As-value'), Aa: simSection.querySelector('#Aa-value'),
+                Kt: simSection.querySelector('#Kt-value'), Kb: simSection.querySelector('#Kb-value'), Ks: simSection.querySelector('#Ks-value'), V: simSection.querySelector('#V-value'),
+                Qt: simSection.querySelector('#Qt-value'), Qb: simSection.querySelector('#Qb-value'), Qs: simSection.querySelector('#Qs-value'), Qa: simSection.querySelector('#Qa-value') 
+            },
+            tabBtns: {
+                main: simSection.querySelector('#tab-btn-main'),
+                q: simSection.querySelector('#tab-btn-q'),
+                mgmt: simSection.querySelector('#tab-btn-mgmt')
+            },
+            tabContents: {
+                main: simSection.querySelector('#tab-content-main'),
+                q: simSection.querySelector('#tab-content-q'),
+                mgmt: simSection.querySelector('#tab-content-mgmt')
+            },
+            lists: {
+                curve: simSection.querySelector('#curve-list'),
+                config: simSection.querySelector('#config-list')
+            },
+            mgmtBtns: {
+                setRef: simSection.querySelector('#btn-set-ref'),
+                saveCurve: simSection.querySelector('#btn-save-curve'),
+                deleteCurve: simSection.querySelector('#btn-delete-curve'),
+                clearAll: simSection.querySelector('#btn-clear-all'),
+                loadConfig: simSection.querySelector('#btn-load-config'),
+                saveConfig: simSection.querySelector('#btn-save-config'),
+                deleteConfig: simSection.querySelector('#btn-delete-config')
+            },
+            modes: {
+                f_top: simSection.querySelector('#f_top_val'), f_back: simSection.querySelector('#f_back_val'), f_air: simSection.querySelector('#f_air_val'),
+                f_peak1: simSection.querySelector('#f_peak1_val'), f_peak2: simSection.querySelector('#f_peak2_val'), f_peak3: simSection.querySelector('#f_peak3_val')
+            },
+            toggles: {
+                total: simSection.querySelector('#toggle-total'),
+                top: simSection.querySelector('#toggle-top'),
+                back: simSection.querySelector('#toggle-back'),
+                air: simSection.querySelector('#toggle-air')
+            },
+            resetBtn: simSection.querySelector('#reset-all-btn'),
+            canvas: simSection.querySelector('#responseChart')
+            // --- REMOVED ---
+            // cursorFreq: simSection.querySelector('#cursor-freq'),
+            // cursorDB: simSection.querySelector('#cursor-db')
+        };
+        
+        if (!dom.canvas) return;
+        const ctx = dom.canvas.getContext('2d');
+
+        // --- Complex Math Helpers ---
+        const c_add = (c1, c2) => ({ real: c1.real + c2.real, imag: c1.imag + c2.imag });
+        const c_sub = (c1, c2) => ({ real: c1.real - c2.real, imag: c1.imag - c2.imag });
+        const c_mul_real = (c, r) => ({ real: c.real * r, imag: c.imag * r });
+        const c_mul = (c1, c2) => ({
+            real: c1.real * c2.real - c1.imag * c2.imag,
+            imag: c1.real * c2.imag + c1.imag * c2.real
+        });
+        const c_div = (c1, c2) => {
+            const denom = c2.real * c2.real + c2.imag * c2.imag;
+            if (denom === 0) return { real: 0, imag: 0 };
+            return {
+                real: (c1.real * c2.real + c1.imag * c2.imag) / denom,
+                imag: (c1.imag * c2.real - c1.real * c2.imag) / denom
+            };
+        };
+        const c_mag = (c) => Math.sqrt(c.real * c.real + c.imag * c.imag);
+        const c_to_db = (c, pref) => {
+            const mag = c_mag(c);
+            if (mag === 0 || !isFinite(mag)) return -200;
+            return 20 * Math.log10(mag / pref);
+        };
+        
+        // --- Helper Function ---
+        function calculateQa(Ks_si) {
+            const { Ks_min_si, Ks_max_si, Qa_min, Qa_max } = app.physics;
+            let qa = (Ks_si - Ks_min_si) * (Qa_max - Qa_min) / (Ks_max_si - Ks_min_si) + Qa_min;
+            return Math.max(Qa_min, Math.min(Qa_max, qa)); // Clamp value
+        }
+
+        // --- Physics Calculation ---
+        function calculateResponse() {
+            const p = app.params;
+            const phys = app.physics;
+            const { c0, rho, pref, F } = phys;
+
+            // These variables are used for the main simulation
+            const kappa = c0 * c0 * rho / p.V;
+            const omt = Math.sqrt((p.Kt + kappa * p.At * p.At) / p.mt);
+            const oms = Math.sqrt(p.Ks / p.ms); 
+            const omb = Math.sqrt((p.Kb + kappa * p.Ab * p.Ab) / p.mb);
+            const oma = Math.sqrt(kappa * p.Aa * p.Aa / p.ma);
+
+            const Rt = (p.mt * omt) / p.Qt;
+            const Rb = (p.mb * omb) / p.Qb;
+            const Rs = (p.ms * oms) / p.Qs;
+            const Ra = (p.ma * oma) / p.Qa; // <-- p.Qa is now calculated
+
+            const alphat = kappa * p.Aa * p.At;
+            const alphab = kappa * p.Aa * p.Ab;
+            const alphbt = kappa * p.Ab * p.At;
+
+            const f_min = 60, f_max = 500, steps = 400;
+            const logMin = Math.log10(f_min);
+            const logRange = Math.log10(f_max) - logMin;
+            
+            const total_data = [];
+            const top_data = [];
+            const back_data = [];
+            const air_data = [];
+            
+            for (let i = 0; i <= steps; i++) {
+                const f = Math.pow(10, logMin + (i / steps) * logRange);
+                const om = 2 * Math.PI * f;
+                const om_sq = om * om;
+
+                const Dt = { real: p.mt * (omt * omt - om_sq), imag: Rt * om };
+                const Ds = { real: p.ms * (oms * oms - om_sq), imag: Rs * om };
+                const Db = { real: p.mb * (omb * omb - om_sq), imag: Rb * om };
+                const Da = { real: p.ma * (oma * oma - om_sq), imag: Ra * om };
+
+                const T1 = c_mul(c_mul(Dt, Ds), c_mul(Db, Da));
+                const T2 = c_mul_real(Da, -2 * alphbt * p.Kt * p.Kb);
+                const T3 = c_mul_real(Ds, 2 * alphbt * alphab * alphat);
+                const T4 = { real: 2 * alphat * alphab * p.Kt * p.Kb, imag: 0 };
+                const T5_inner = c_sub(c_mul(Dt, Ds), { real: p.Kt * p.Kt, imag: 0 });
+                const T5 = c_mul_real(T5_inner, -alphab * alphab);
+                const T6_inner = c_sub(c_mul(Ds, Db), { real: p.Kb * p.Kb, imag: 0 });
+                const T6 = c_mul_real(T6_inner, -alphat * alphat);
+                const T7 = c_mul_real(c_mul(Ds, Da), -alphbt * alphbt);
+                const T8 = c_mul_real(c_mul(Dt, Da), -p.Kb * p.Kb);
+                const T9 = c_mul_real(c_mul(Db, Da), -p.Kt * p.Kt);
+                
+                const Dbar = c_add(T1, c_add(T2, c_add(T3, c_add(T4, c_add(T5, c_add(T6, c_add(T7, c_add(T8, T9))))))));
+
+                const F_on_Dbar = c_div({ real: F, imag: 0 }, Dbar);
+                
+                const yt_num = c_add(c_mul(Ds, c_mul(Db, Da)), c_add(c_mul_real(Ds, -alphab * alphab), c_mul_real(Da, -p.Kb * p.Kb)));
+                const ys_num = c_add(c_mul_real(c_mul(Db, Da), p.Kt), c_add({ real: -p.Kt * (alphab * alphab), imag: 0 }, c_add(c_mul_real(Da, alphbt * p.Kb), { real: -alphat * alphab * p.Kb, imag: 0 })));
+                const yb_num = c_add(c_mul_real(Da, -p.Kt * p.Kb), c_add(c_mul_real(c_mul(Da, Ds), -alphbt), c_mul_real(Ds, alphab * alphat)));
+                const ya_num = c_add({ real: p.Kt * p.Kb * alphab, imag: 0 }, c_add(c_mul_real(Ds, alphbt * alphab), c_add(c_mul_real(c_mul(Ds, Db), -alphat), { real: alphat * (p.Kb * p.Kb), imag: 0 })));
+                
+                const yt = c_mul(F_on_Dbar, yt_num);
+                const ys = c_mul(F_on_Dbar, ys_num);
+                const yb = c_mul(F_on_Dbar, yb_num);
+                const ya = c_mul(F_on_Dbar, ya_num);
+
+                const pres_scale = (om_sq * rho) / (4 * Math.PI * phys.r);
+
+                const pres_top_comp = c_mul_real(yt, p.At);
+                const pres_sides_comp = c_mul_real(ys, p.As);
+                const pres_back_comp = c_mul_real(yb, p.Ab);
+                const pres_air_comp = c_mul_real(ya, p.Aa);
+                
+                const pres_sum = c_add(pres_top_comp, c_add(pres_sides_comp, c_add(pres_back_comp, pres_air_comp)));
+                const pressure_total = c_mul_real(pres_sum, pres_scale);
+
+                const pressure_top = c_mul_real(pres_top_comp, pres_scale);
+                const pressure_back = c_mul_real(pres_back_comp, pres_scale);
+                const pressure_air = c_mul_real(pres_air_comp, pres_scale);
+
+                total_data.push({ x: f, y: c_to_db(pressure_total, pref) });
+                top_data.push({ x: f, y: c_to_db(pressure_top, pref) });
+                back_data.push({ x: f, y: c_to_db(pressure_back, pref) });
+                air_data.push({ x: f, y: c_to_db(pressure_air, pref) });
+            }
+
+            app.chart.data.datasets[1].data = total_data;
+            app.chart.data.datasets[2].data = top_data;
+            app.chart.data.datasets[3].data = back_data;
+            app.chart.data.datasets[4].data = air_data;
+            app.chart.update('none');
+
+            const omt_display = Math.sqrt(p.Kt / p.mt);
+            const omb_display = Math.sqrt(p.Kb / p.mb);
+
+            // Display the frequencies
+            dom.modes.f_air.textContent = (oma / (2 * Math.PI)).toFixed(1);
+            dom.modes.f_top.textContent = (omt_display / (2 * Math.PI)).toFixed(1); 
+            dom.modes.f_back.textContent = (omb_display / (2 * Math.PI)).toFixed(1); 
+            
+            const peaks = findPeaks(total_data, 2.0);
+            peaks.sort((a, b) => a.x - b.x);
+            
+            dom.modes.f_peak1.textContent = peaks[0] ? peaks[0].x.toFixed(1) : '---';
+            dom.modes.f_peak2.textContent = peaks[1] ? peaks[1].x.toFixed(1) : '---';
+            dom.modes.f_peak3.textContent = peaks[2] ? peaks[2].x.toFixed(1) : '---';
+        }
+
+        function findPeaks(data, prominence) {
+            let peaks = [];
+            for (let i = 1; i < data.length - 1; i++) {
+                if (data[i].y > data[i - 1].y && data[i].y > data[i + 1].y) {
+                    peaks.push({ ...data[i], index: i });
+                }
+            }
+            let prominentPeaks = [];
+            for (const peak of peaks) {
+                let leftMin = peak.y;
+                for (let i = peak.index - 1; i >= 0; i--) {
+                    if (data[i].y < leftMin) leftMin = data[i].y;
+                    if (data[i].y > peak.y) break;
+                }
+                let rightMin = peak.y;
+                for (let i = peak.index + 1; i < data.length; i++) {
+                    if (data[i].y < rightMin) rightMin = data[i].y;
+                    if (data[i].y > peak.y) break;
+                }
+                const peakProminence = peak.y - Math.max(leftMin, rightMin);
+                if (peakProminence > prominence) {
+                    prominentPeaks.push({ ...peak, prominence: peakProminence });
+                }
+            }
+            return prominentPeaks;
+        }
+
+        // --- UI Update Functions ---
+        function readParamsFromUI() {
+            const p = {};
+            p.mt = parseFloat(dom.sliders.mt.value) / 1000.0;
+            p.mb = parseFloat(dom.sliders.mb.value) / 1000.0;
+            p.ms = parseFloat(dom.sliders.ms.value) / 1000.0;
+            p.ma = parseFloat(dom.sliders.ma.value) / 1000.0;
+            p.At = parseFloat(dom.sliders.At.value) / 10000.0;
+            p.Ab = parseFloat(dom.sliders.Ab.value) / 10000.0;
+            p.As = parseFloat(dom.sliders.As.value) / 10000.0;
+            p.Aa = parseFloat(dom.sliders.Aa.value) / 10000.0;
+            p.Kt = parseFloat(dom.sliders.Kt.value) * 1000.0;
+            p.Kb = parseFloat(dom.sliders.Kb.value) * 1000.0;
+            p.Ks = parseFloat(dom.sliders.Ks.value) * 1000.0;
+            p.V = parseFloat(dom.sliders.V.value) / 1000.0;
+            p.Qt = parseFloat(dom.sliders.Qt.value);
+            p.Qb = parseFloat(dom.sliders.Qb.value);
+            p.Qs = parseFloat(dom.sliders.Qs.value);
+            
+            p.Qa = calculateQa(p.Ks);
+            
+            app.params = p;
+        }
+
+        function updateUIFromParams() {
+            const p = app.params;
+            dom.sliders.mt.value = (p.mt * 1000.0).toFixed(1);
+            dom.sliders.mb.value = (p.mb * 1000.0).toFixed(1);
+            dom.sliders.ms.value = (p.ms * 1000.0).toFixed(1);
+            dom.sliders.ma.value = (p.ma * 1000.0).toFixed(2);
+            dom.sliders.At.value = (p.At * 10000.0).toFixed(0);
+            dom.sliders.Ab.value = (p.Ab * 10000.0).toFixed(0);
+            dom.sliders.As.value = (p.As * 10000.0).toFixed(0);
+            dom.sliders.Aa.value = (p.Aa * 10000.0).toFixed(0);
+            dom.sliders.Kt.value = (p.Kt / 1000.0).toFixed(0);
+            dom.sliders.Kb.value = (p.Kb / 1000.0).toFixed(0);
+            dom.sliders.Ks.value = (p.Ks / 1000.0).toFixed(0);
+            dom.sliders.V.value = (p.V * 1000.0).toFixed(1);
+            dom.sliders.Qt.value = p.Qt.toFixed(0);
+            dom.sliders.Qb.value = p.Qb.toFixed(0);
+            dom.sliders.Qs.value = p.Qs.toFixed(0);
+            
+            updateAllValueDisplays();
+            calculateResponse();
+        }
+
+        function updateAllValueDisplays() {
+            dom.values.mt.textContent = `${parseFloat(dom.sliders.mt.value).toFixed(1)} g`;
+            dom.values.mb.textContent = `${parseFloat(dom.sliders.mb.value).toFixed(1)} g`;
+            dom.values.ms.textContent = `${parseFloat(dom.sliders.ms.value).toFixed(1)} g`;
+            dom.values.ma.textContent = `${parseFloat(dom.sliders.ma.value).toFixed(2)} g`;
+            dom.values.At.textContent = `${parseFloat(dom.sliders.At.value).toFixed(0)} cm²`;
+            dom.values.Ab.textContent = `${parseFloat(dom.sliders.Ab.value).toFixed(0)} cm²`;
+            dom.values.As.textContent = `${parseFloat(dom.sliders.As.value).toFixed(0)} cm²`;
+            dom.values.Aa.textContent = `${parseFloat(dom.sliders.Aa.value).toFixed(0)} cm²`;
+            dom.values.Kt.textContent = `${parseFloat(dom.sliders.Kt.value).toFixed(0)} N/mm`;
+            dom.values.Kb.textContent = `${parseFloat(dom.sliders.Kb.value).toFixed(0)} N/mm`;
+            dom.values.Ks.textContent = `${parseFloat(dom.sliders.Ks.value).toFixed(0)} N/mm`;
+            dom.values.V.textContent = `${parseFloat(dom.sliders.V.value).toFixed(1)} L`;
+            dom.values.Qt.textContent = `${parseFloat(dom.sliders.Qt.value).toFixed(0)}`;
+            dom.values.Qb.textContent = `${parseFloat(dom.sliders.Qb.value).toFixed(0)}`;
+            dom.values.Qs.textContent = `${parseFloat(dom.sliders.Qs.value).toFixed(0)}`;
+            
+            dom.values.Qa.textContent = `${app.params.Qa ? app.params.Qa.toFixed(0) : '---'}`;
+        }
+
+        function onSliderInput(e) {
+            const key = e.target.id;
+            let unit = '', fixed = 0;
+            if (['mt', 'mb', 'ms'].includes(key)) { unit = ' g'; fixed = 1; }
+            else if (key === 'ma') { unit = ' g'; fixed = 2; }
+            else if (['At', 'Ab', 'As', 'Aa'].includes(key)) { unit = ' cm²'; fixed = 0; }
+            else if (['Kt', 'Kb', 'Ks'].includes(key)) { unit = ' N/mm'; fixed = 0; }
+            else if (key === 'V') { unit = ' L'; fixed = 1; }
+            
+            dom.values[key].textContent = `${parseFloat(e.target.value).toFixed(fixed)}${unit}`;
+            
+            readParamsFromUI(); // This calculates and sets app.params.Qa
+
+            if (key === 'Ks') {
+                dom.values.Qa.textContent = `${app.params.Qa.toFixed(0)}`;
+            }
+            
+            calculateResponse();
+        }
+
+        function onTabClick(e) {
+            const id = e.target.id;
+            Object.values(dom.tabBtns).forEach(btn => btn.classList.replace('sim-tab-btn-active', 'sim-tab-btn-inactive'));
+            Object.values(dom.tabContents).forEach(content => content.classList.add('hidden'));
+            
+            if (id === 'tab-btn-main') {
+                dom.tabBtns.main.classList.replace('sim-tab-btn-inactive', 'sim-tab-btn-active');
+                dom.tabContents.main.classList.remove('hidden');
+            } else if (id === 'tab-btn-q') {
+                dom.tabBtns.q.classList.replace('sim-tab-btn-inactive', 'sim-tab-btn-active');
+                dom.tabContents.q.classList.remove('hidden');
+            } else if (id === 'tab-btn-mgmt') {
+                dom.tabBtns.mgmt.classList.replace('sim-tab-btn-inactive', 'sim-tab-btn-active');
+                dom.tabContents.mgmt.classList.remove('hidden');
+            }
+        }
+
+        // --- Management Functions ---
+        function onSetReference() {
+            const totalSumData = app.chart.data.datasets[1].data; // Get "Total Sum"
+            app.chart.data.datasets[0].data = [...totalSumData]; // Clone data to "Reference"
+            app.chart.data.datasets[0].hidden = false; // Make sure it's visible
+            app.chart.update('none');
+        }
+
+        function onSaveCurve() {
+            const name = prompt("Enter a name for this curve:", `Curve ${app.saved_curves.length + 1}`);
+            if (!name) return;
+
+            const totalSumData = app.chart.data.datasets[1].data;
+            const color = app.SAVED_CURVE_COLORS[app.saved_curves.length % app.SAVED_CURVE_COLORS.length];
+            
+            const newCurve = {
+                name: name,
+                data: [...totalSumData],
+                color: color,
+                params: { ...app.params } // This will save the calculated Qa
+            };
+            app.saved_curves.push(newCurve);
+
+            try {
+                localStorage.setItem(app.CURVE_STORAGE_KEY, JSON.stringify(app.saved_curves));
+            } catch (e) {
+                alert("Error saving curve to local storage.");
+            }
+
+            const newDataset = {
+                label: name,
+                data: newCurve.data,
+                borderColor: color,
+                borderWidth: 1.5,
+                borderDash: [5, 5],
+                pointRadius: 0,
+                tension: 0.1,
+                hidden: !dom.toggles.total.checked // Hide if total is hidden
+            };
+            app.chart.data.datasets.push(newDataset);
+            app.chart.update('none');
+            updateCurveList();
+        }
+
+        function onDeleteCurve() {
+            const selectedName = dom.lists.curve.value;
+            if (!selectedName) { alert("Please select a curve to delete."); return; }
+            const curveIndex = app.saved_curves.findIndex(c => c.name === selectedName);
+            if (curveIndex > -1) app.saved_curves.splice(curveIndex, 1);
+
+            try {
+                localStorage.setItem(app.CURVE_STORAGE_KEY, JSON.stringify(app.saved_curves));
+            } catch (e) {
+                alert("Error updating local storage.");
+            }
+
+            const datasetIndex = app.chart.data.datasets.findIndex(d => d.label === selectedName);
+            if (datasetIndex > -1) app.chart.data.datasets.splice(datasetIndex, 1);
+            app.chart.update('none');
+            updateCurveList();
+        }
+
+        function onClearAllCurves() {
+            if (!confirm("Are you sure you want to delete all saved curves?")) return;
+            app.saved_curves = [];
+
+            try {
+                localStorage.setItem(app.CURVE_STORAGE_KEY, JSON.stringify(app.saved_curves)); 
+            } catch (e) {
+                alert("Error clearing local storage.");
+            }
+
+            app.chart.data.datasets.splice(5); // Keep first 5 (Ref, Total, Top, Back, Air)
+            app.chart.data.datasets[0].data = []; // Clear Ref data
+            app.chart.data.datasets[0].hidden = true; // Hide Ref
+            app.chart.update('none');
+            updateCurveList();
+        }
+
+        function updateCurveList() {
+            dom.lists.curve.innerHTML = '';
+            app.saved_curves.forEach(curve => {
+                const option = document.createElement('option');
+                option.value = curve.name;
+                option.textContent = curve.name;
+                dom.lists.curve.appendChild(option);
+            });
+        }
+
+        function loadCurvesFromStorage() {
+            try {
+                const stored = localStorage.getItem(app.CURVE_STORAGE_KEY);
+                if (stored) {
+                    app.saved_curves = JSON.parse(stored);
+                    
+                    // Re-populate the chart datasets from storage
+                    app.saved_curves.forEach(curve => {
+                        const newDataset = {
+                            label: curve.name,
+                            data: curve.data,
+                            borderColor: curve.color,
+                            borderWidth: 1.5,
+                            borderDash: [5, 5],
+                            pointRadius: 0,
+                            tension: 0.1,
+                            hidden: !dom.toggles.total.checked // Respect the "Total Sum" toggle
+                        };
+                        app.chart.data.datasets.push(newDataset);
+                    });
+                }
+            } catch (e) {
+                console.error("Error loading saved curves:", e);
+                app.saved_curves = [];
+            }
+            updateCurveList(); // Populate the <select> list
+        }
+
+        // --- Config (localStorage) Functions ---
+        function onSaveConfig() {
+            const name = prompt("Enter a name for this configuration:", `Config ${Object.keys(app.saved_configs).length + 1}`);
+            if (!name) return;
+            // Save params *except* for the calculated Qa
+            const { Qa, ...paramsToSave } = app.params; 
+            app.saved_configs[name] = paramsToSave;
+            try {
+                localStorage.setItem(app.CONFIG_STORAGE_KEY, JSON.stringify(app.saved_configs));
+                updateConfigList();
+            } catch (e) { alert("Error saving configuration."); }
+        }
+
+        function onLoadConfig() {
+            const selectedName = dom.lists.config.value;
+            if (!selectedName || !app.saved_configs[selectedName]) { alert("Please select a configuration to load."); return; }
+            
+            app.params = { ...app.params_def, ...app.saved_configs[selectedName] };
+            app.params.Qa = calculateQa(app.params.Ks);
+            
+            updateUIFromParams();
+        }
+
+        function onDeleteConfig() {
+            const selectedName = dom.lists.config.value;
+            if (!selectedName) { alert("Please select a configuration to delete."); return; }
+            if (confirm(`Are you sure you want to delete '${selectedName}'?`)) {
+                delete app.saved_configs[selectedName];
+                localStorage.setItem(app.CONFIG_STORAGE_KEY, JSON.stringify(app.saved_configs));
+                updateConfigList();
+            }
+        }
+
+        function loadConfigsFromStorage() {
+            try {
+                const stored = localStorage.getItem(app.CONFIG_STORAGE_KEY);
+                if (stored) app.saved_configs = JSON.parse(stored);
+            } catch (e) { app.saved_configs = {}; }
+            updateConfigList();
+        }
+        
+        function updateConfigList() {
+            dom.lists.config.innerHTML = '';
+            Object.keys(app.saved_configs).forEach(name => {
+                const option = document.createElement('option');
+                option.value = name;
+                option.textContent = name;
+                dom.lists.config.appendChild(option);
+            });
+        }
+        
+        // --- Toggle Curve Visibility ---
+        function onToggleCurves(e) {
+            const id = e.target.id;
+            const isChecked = e.target.checked;
+            
+            if (id === 'toggle-total') app.chart.data.datasets[1].hidden = !isChecked;
+            if (id === 'toggle-top')   app.chart.data.datasets[2].hidden = !isChecked;
+            if (id === 'toggle-back')  app.chart.data.datasets[3].hidden = !isChecked;
+            if (id === 'toggle-air')   app.chart.data.datasets[4].hidden = !isChecked;
+
+            if (id === 'toggle-total') {
+                for(let i = 5; i < app.chart.data.datasets.length; i++) {
+                    app.chart.data.datasets[i].hidden = !isChecked;
+                }
+            }
+            
+            app.chart.update('none');
+        }
+
+        // --- Reset & Init ---
+        function onResetDefaults() {
+            app.params = { ...app.params_def };
+            app.params.Qa = calculateQa(app.params.Ks);
+            updateUIFromParams();
+        }
+
+        function initializeChart() {
+            if (!ctx) return;
+            
+            const uiFont = "'Inter', sans-serif";
+            Chart.defaults.font.family = uiFont;
+            Chart.defaults.font.size = 12;
+            Chart.defaults.color = '#4b5563';
+
+            app.chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    datasets: [
+                        { // Dataset 0
+                            label: 'Reference',
+                            data: [],
+                            borderColor: '#dc2626',
+                            borderWidth: 1.5,
+                            borderDash: [6, 3],
+                            pointRadius: 0,
+                            tension: 0.1,
+                            hidden: true 
+                        },
+                        { // Dataset 1
+                            label: 'Total Sum',
+                            data: [],
+                            borderColor: '#f97316',
+                            borderWidth: 3,
+                            pointRadius: 0,
+                            tension: 0.1,
+                            hidden: false 
+                        },
+                        { // Dataset 2
+                            label: 'Top',
+                            data: [],
+                            borderColor: '#3b82f6',
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            tension: 0.1,
+                            hidden: true 
+                        },
+                        { // Dataset 3
+                            label: 'Back',
+                            data: [],
+                            borderColor: '#10b981',
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            pointRadius: 0,
+                            tension: 0.1,
+                            hidden: true 
+                        },
+                        { // Dataset 4
+                            label: 'Air',
+                            data: [],
+                            borderColor: '#8b5cf6',
+                            borderWidth: 2,
+                            borderDash: [2, 2],
+                            pointRadius: 0,
+                            tension: 0.1,
+                            hidden: true 
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            type: 'logarithmic',
+                            min: 60, max: 500,
+                            title: { display: true, text: 'Frequency (Hz)', font: { size: 14, weight: '500' }, color: '#374151' },
+                            ticks: { 
+                                color: '#6b7280',
+                                callback: (value) => ([60, 80, 100, 150, 200, 300, 400, 500].includes(value) ? value.toString() : null)
+                            }
+                        },
+                        y: {
+                            min: 40,
+                            max: 100, 
+                            title: { display: true, text: 'Sound Pressure Level (dB)', font: { size: 14, weight: '500' }, color: '#374151' },
+                            ticks: { color: '#6b7280' }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }, // Main legend is OFF
+                        tooltip: {
+                            enabled: true,
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                title: (items) => `Frequency: ${parseFloat(items[0].parsed.x).toFixed(1)} Hz`,
+                                label: (context) => {
+                                    if (context.raw.y < -100) return;
+                                    return `${context.dataset.label}: ${parseFloat(context.raw.y).toFixed(2)} dB`
+                                }
+                            }
+                        }
+                    },
+                    interaction: { mode: 'index', intersect: false },
+                }
+            });
+        }
+
+        function addEventListeners() {
+            for (const key in dom.sliders) {
+                dom.sliders[key].addEventListener('input', onSliderInput);
+            }
+            for (const key in dom.tabBtns) {
+                dom.tabBtns[key].addEventListener('click', onTabClick);
+            }
+            dom.resetBtn.addEventListener('click', onResetDefaults);
+            
+            dom.mgmtBtns.setRef.addEventListener('click', onSetReference);
+            dom.mgmtBtns.saveCurve.addEventListener('click', onSaveCurve);
+            dom.mgmtBtns.deleteCurve.addEventListener('click', onDeleteCurve);
+            dom.mgmtBtns.clearAll.addEventListener('click', onClearAllCurves);
+            dom.mgmtBtns.saveConfig.addEventListener('click', onSaveConfig);
+            dom.mgmtBtns.loadConfig.addEventListener('click', onLoadConfig);
+            dom.mgmtBtns.deleteConfig.addEventListener('click', onDeleteConfig);
+
+            for (const key in dom.toggles) {
+                dom.toggles[key].addEventListener('change', onToggleCurves);
+            }
+
+            // --- REMOVED MOUSEOUT LISTENER ---
+            // dom.canvas.addEventListener('mouseout', () => {
+            //      dom.cursorFreq.textContent = '---';
+            //      dom.cursorDB.textContent = '---';
+            // });
+        }
+        
+        // --- Initialization ---
+        function main() {
+            initializeChart();
+            addEventListeners();
+            loadConfigsFromStorage();
+            loadCurvesFromStorage();
+            onResetDefaults();
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', main);
+        } else {
+            main();
+        }
+
+    })();
+    </script>
+</body>
+</html>

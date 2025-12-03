@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mechanical Impedance Simulator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+      /* --- Self-Contained CSS for Elementor Embedding --- */
+      #iulius-sim-container {
+          font-family: 'Inter', sans-serif;
+          background-color: #f3f4f6; /* bg-gray-100 */
+          color: #1f2937; /* text-gray-800 */
+      }
+
+      #iulius-sim-container *,
+      #iulius-sim-container *::before,
+      #iulius-sim-container *::after {
+            box-sizing: border-box;
+      }
+
+      #iulius-sim-container .container {
+          width: 100%;
+          margin-left: auto;
+          margin-right: auto;
+          padding: 1rem; /* p-4 */
+      }
+      
+      @media (min-width: 640px) {
+          #iulius-sim-container .container { max-width: 640px; padding: 1.5rem; }
+      }
+      @media (min-width: 768px) {
+          #iulius-sim-container .container { max-width: 768px; }
+      }
+      @media (min-width: 1024px) {
+          #iulius-sim-container .container { max-width: 1024px; padding: 2rem; }
+      }
+      @media (min-width: 1280px) {
+          #iulius-sim-container .container { max-width: 1280px; }
+      }
+
+      #iulius-sim-container h1 { font-size: 1.875rem; line-height: 2.25rem; font-weight: 700; color: #111827; }
+      #iulius-sim-container h2 { font-size: 1.5rem; line-height: 2rem; font-weight: 700; color: #111827; }
+      #iulius-sim-container h3 { font-size: 1.25rem; line-height: 1.75rem; font-weight: 600; color: #1f2937; }
+
+      @media (min-width: 768px) {
+          #iulius-sim-container h1 { font-size: 2.25rem; line-height: 2.5rem; }
+      }
+
+      #iulius-sim-container .text-center { text-align: center; }
+      #iulius-sim-container .text-left { text-align: left; }
+      #iulius-sim-container .mb-10 { margin-bottom: 2.5rem; }
+      #iulius-sim-container .mb-6 { margin-bottom: 1.5rem; }
+      #iulius-sim-container .mb-4 { margin-bottom: 1rem; }
+      #iulius-sim-container .mt-1 { margin-top: 0.25rem; }
+      #iulius-sim-container .mt-2 { margin-top: 0.5rem; }
+      #iulius-sim-container .mt-12 { margin-top: 3rem; }
+      
+      #iulius-sim-container .space-y-12 > :not([hidden]) ~ :not([hidden]) { margin-top: 3rem; }
+      #iulius-sim-container .space-y-6 > :not([hidden]) ~ :not([hidden]) { margin-top: 1.5rem; }
+      #iulius-sim-container .space-x-2 > :not([hidden]) ~ :not([hidden]) { margin-left: 0.5rem; }
+      #iulius-sim-container .space-x-4 > :not([hidden]) ~ :not([hidden]) { margin-left: 1rem; }
+      
+      #iulius-sim-container .w-full { width: 100%; }
+      #iulius-sim-container .w-16 { width: 4rem; }
+      #iulius-sim-container .h-2 { height: 0.5rem; }
+      #iulius-sim-container .h-5 { height: 1.25rem; }
+      #iulius-sim-container .w-5 { width: 1.25rem; }
+      #iulius-sim-container .p-6 { padding: 1.5rem; }
+      #iulius-sim-container .p-4 { padding: 1rem; }
+      #iulius-sim-container .p-2 { padding: 0.5rem; }
+      #iulius-sim-container .pb-4 { padding-bottom: 1rem; }
+      #iulius-sim-container .pb-2 { padding-bottom: 0.5rem; }
+      #iulius-sim-container .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+      #iulius-sim-container .px-2 { padding-left: 0.5rem; padding-right: 0.5rem; }
+      #iulius-sim-container .px-4 { padding-left: 1rem; padding-right: 1rem; }
+
+      #iulius-sim-container .bg-white { background-color: #ffffff; }
+      #iulius-sim-container .bg-gray-50 { background-color: #f9fafb; }
+      #iulius-sim-container .bg-gray-200 { background-color: #e5e7eb; }
+
+      #iulius-sim-container .rounded-2xl { border-radius: 1rem; }
+      #iulius-sim-container .rounded-xl { border-radius: 0.75rem; }
+      #iulius-sim-container .rounded-lg { border-radius: 0.5rem; }
+      #iulius-sim-container .rounded { border-radius: 0.25rem; }
+      
+      #iulius-sim-container .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05); }
+      #iulius-sim-container .shadow-sm { box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05); }
+
+      #iulius-sim-container .border-b { border-bottom-width: 1px; }
+      #iulius-sim-container .border-gray-200 { border-color: #e5e7eb; }
+      #iulius-sim-container .border-gray-300 { border-color: #d1d5db; }
+      
+      #iulius-sim-container .grid { display: grid; }
+      #iulius-sim-container .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+      #iulius-sim-container .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      
+      #iulius-sim-container .gap-6 { gap: 1.5rem; }
+      #iulius-sim-container .gap-4 { gap: 1rem; }
+      #iulius-sim-container .gap-2 { gap: 0.5rem; }
+      #iulius-sim-container .gap-x-4 { column-gap: 1rem; }
+      #iulius-sim-container .gap-y-3 { row-gap: 0.75rem; }
+
+      @media (min-width: 768px) {
+          #iulius-sim-container .md\:p-8 { padding: 2rem; }
+          #iulius-sim-container .md\:gap-8 { gap: 2rem; }
+      }
+
+      @media (min-width: 1024px) {
+          #iulius-sim-container .lg\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+          #iulius-sim-container .lg\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+          #iulius-sim-container .lg\:col-span-1 { grid-column: span 1 / span 1; }
+          #iulius-sim-container .lg\:col-span-2 { grid-column: span 2 / span 2; }
+      }
+
+      #iulius-sim-container .self-start { align-self: flex-start; }
+      #iulius-sim-container .flex { display: flex; }
+      #iulius-sim-container .items-center { align-items: center; }
+      #iulius-sim-container .justify-between { justify-content: space-between; }
+      #iulius-sim-container .justify-center { justify-content: center; }
+
+      #iulius-sim-container .font-bold { font-weight: 700; }
+      #iulius-sim-container .font-semibold { font-weight: 600; }
+      #iulius-sim-container .font-medium { font-weight: 500; }
+
+      #iulius-sim-container .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+      #iulius-sim-container .text-gray-500 { color: #6b7280; }
+      #iulius-sim-container .text-gray-600 { color: #4b5563; }
+      #iulius-sim-container .text-gray-700 { color: #374151; }
+      #iulius-sim-container .text-gray-800 { color: #1f2937; }
+      #iulius-sim-container .text-blue-600 { color: #2563eb; }
+      #iulius-sim-container .text-emerald-600 { color: #059669; }
+      #iulius-sim-container .text-yellow-500 { color: #f59e0b; }
+      #iulius-sim-container .text-white { color: #ffffff; }
+
+      #iulius-sim-container .appearance-none { appearance: none; }
+      #iulius-sim-container .cursor-pointer { cursor: pointer; }
+
+      #iulius-sim-container .slider-thumb::-webkit-slider-thumb {
+          -webkit-appearance: none; appearance: none;
+          width: 20px; height: 20px;
+          background: #3b82f6; cursor: pointer;
+          border-radius: 9999px; transition: background-color 0.2s;
+      }
+      #iulius-sim-container .slider-thumb::-moz-range-thumb {
+          width: 20px; height: 20px;
+          background: #3b82f6; cursor: pointer;
+          border-radius: 9999px; border: none;
+          transition: background-color 0.2s;
+      }
+      #iulius-sim-container .slider-thumb:disabled::-webkit-slider-thumb { background: #9ca3af; }
+      #iulius-sim-container .slider-thumb:disabled::-moz-range-thumb { background: #9ca3af; }
+      
+      #iulius-sim-container .sim-btn {
+          width: 100%; font-weight: 700;
+          padding: 0.5rem 1rem;
+          border-radius: 0.5rem;
+          transition: background-color 0.2s, color 0.2s;
+          box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05);
+          color: white;
+          border: none;
+          cursor: pointer;
+      }
+      #iulius-sim-container .sim-btn-primary { background-color: #2563eb; }
+      #iulius-sim-container .sim-btn-primary:hover { background-color: #1d4ed8; }
+      #iulius-sim-container .sim-btn-secondary { background-color: #10b981; }
+      #iulius-sim-container .sim-btn-secondary:hover { background-color: #059669; }
+      #iulius-sim-container .sim-btn-tertiary { background-color: #374151; }
+      #iulius-sim-container .sim-btn-tertiary:hover { background-color: #1f2937; }
+      #iulius-sim-container .sim-btn-action { background-color: #f59e0b; }
+      #iulius-sim-container .sim-btn-action:hover { background-color: #d97706; }
+
+      #iulius-sim-container .view-mode-btn {
+          background-color: #e5e7eb;
+          color: #1f2937;
+          font-weight: 600;
+          padding: 0.5rem;
+          border-radius: 0.5rem;
+          transition: background-color 0.2s, color 0.2s;
+          font-size: 0.875rem;
+          border: none;
+          cursor: pointer;
+      }
+      #iulius-sim-container .view-mode-btn:hover { background-color: #d1d5db; }
+      #iulius-sim-container .view-mode-btn-active {
+          background-color: #3b82f6 !important;
+          color: white !important;
+      }
+
+      #iulius-sim-container .form-checkbox {
+          -webkit-appearance: none; -moz-appearance: none; appearance: none;
+          padding: 0;
+          display: inline-block;
+          vertical-align: middle;
+          background-origin: border-box;
+          user-select: none;
+          flex-shrink: 0;
+          height: 1.25rem; width: 1.25rem;
+          color: #2563eb;
+          background-color: #fff;
+          border-color: #6b7280;
+          border-width: 1px;
+          border-radius: 0.25rem;
+      }
+      #iulius-sim-container .form-checkbox:checked {
+          background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e");
+          border-color: transparent;
+          background-color: currentColor;
+          background-size: 100% 100%;
+          background-position: center;
+          background-repeat: no-repeat;
+      }
+
+      #iulius-sim-container canvas { display: block; width: 100%; height: 100%; }
+
+      #iulius-sim-container .canvas-container {
+          position: relative; /* Needed for absolute positioning of the logo */
+          width: 100%;
+          aspect-ratio: 16 / 9;
+          background-color: #f9fafb;
+          border-radius: 0.75rem;
+          padding: 0.5rem;
+      }
+
+      /* --- NEW: Logo on graph CSS --- */
+      #iulius-sim-container #iulius-logo-graph {
+          position: absolute;
+          /* Using reference app values directly */
+          bottom: 65px;
+          right: 28px;
+          width: 50px;
+          height: auto;
+          opacity: 0.2;
+          z-index: 10;
+          pointer-events: none;
+      }
+
+      /* --- Footer CSS (from previous step) --- */
+      #iulius-sim-footer {
+          text-align: center;
+          padding: 1rem;
+          margin-top: 2rem;
+          color: #6b7280; /* text-gray-500 */
+          font-size: 0.875rem; /* text-sm */
+          line-height: 1.25rem;
+          font-family: 'Inter', sans-serif;
+      }
+
+  </style>
+</head>
+<body>
+  <div id="iulius-sim-container">
+    <div class="container">
+      <section id="impedance-simulator" class="w-full bg-white rounded-2xl shadow-lg p-6 md:p-8">
+            <div class="text-left mb-6 pb-4 border-b border-gray-200">
+                <h2>Mechanical Impedance Simulator</h2>
+                <p class="text-gray-500 mt-1">Observe wave reflection and transmission between two media.</p>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
+                <div class="lg:col-span-1 bg-gray-50 rounded-xl p-6 space-y-6 self-start">
+                    <div class="grid grid-cols-2 gap-4">
+                        <button id="impedanceResetBtn" class="sim-btn sim-btn-primary">Play</button>
+                        <button id="impedancePauseBtn" class="sim-btn sim-btn-action">Pause</button>
+                    </div>
+                    <div>
+                        <h3 class="mb-4">Simulation Controls</h3>
+                        <label class="block mb-4">
+                            <span class="font-medium text-gray-700">Speed: <span id="impedanceSpeedValue" class="font-semibold text-blue-600">0.30</span>x</span>
+                            <input type="range" id="impedanceSpeedSlider" min="1" max="10" step="1" value="5" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb mt-2"/>
+                        </label>
+                        <label class="block">
+                            <span class="font-medium text-gray-700">Amplitude: <span id="impedanceAmplitudeValue" class="font-semibold text-blue-600">150</span></span>
+                            <input type="range" id="impedanceAmplitudeSlider" min="1" max="10" step="1" value="5" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb mt-2"/>
+                        </label>
+                    </div>
+                     <div>
+                        <h3 class="mb-4">Medium 1 Properties</h3>
+                        <label class="block mb-4">
+                            <span class="font-medium text-gray-700">Density (Mass): <span id="m1DensityValue" class="font-semibold text-blue-600">2</span></span>
+                            <input type="range" id="m1DensitySlider" min="1" max="10" value="2" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb mt-2"/>
+                        </label>
+                        <label class="block">
+                            <span class="font-medium text-gray-700">Stiffness (K): <span id="m1StiffnessValue" class="font-semibold text-blue-600">8</span></span>
+                            <input type="range" id="m1StiffnessSlider" min="1" max="10" value="8" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb mt-2"/>
+                        </label>
+                    </div>
+                    <div>
+                        <h3 class="mb-4">Medium 2 Properties</h3>
+                        <label class="block mb-4">
+                            <span class="font-medium text-gray-700">Density (Mass): <span id="m2DensityValue" class="font-semibold text-blue-600">8</span></span>
+                            <input type="range" id="m2DensitySlider" min="1" max="10" value="8" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb mt-2"/>
+                        </label>
+                        <label class="block">
+                            <span class="font-medium text-gray-700">Stiffness (K): <span id="m2StiffnessValue" class="font-semibold text-blue-600">8</span></span>
+                            <input type="range" id="m2StiffnessSlider" min="1" max="10" value="8" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-thumb mt-2"/>
+                        </label>
+                    </div>
+                </div>
+                <div class="lg:col-span-2 canvas-container">
+                    <canvas id="impedanceCanvas"></canvas>
+                    <img id="iulius-logo-graph" src="https://www.iuliusguitars.com/wp-content/uploads/2025/10/IuliusBlack.png" alt="Iulius Guitars Logo">
+                </div>
+            </div>
+      </section>
+
+      <div id="iulius-sim-footer">
+        © Iulius Guitars – Giuliano Nicoletti. These tools are shared for your personal growth. If you'd like to share them, just ask first.
+      </div>
+
+    </div> </div> <script>
+    // --- The JavaScript remains unchanged from the previous version ---
+    (() => {
+        // --- Universal resize handler ---
+        const allCanvases = document.querySelectorAll('canvas');
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                allCanvases.forEach(canvas => {
+                    const event = new CustomEvent('redrawCanvas');
+                    canvas.dispatchEvent(event);
+                });
+            }, 100);
+        });
+
+        // --- Utility to size a canvas and its container ---
+        function sizeCanvas(canvas) {
+            const dpr = window.devicePixelRatio || 1;
+            const parent = canvas.parentElement;
+            const rect = parent.getBoundingClientRect();
+            
+            if (rect.width <= 0 || rect.height <= 0) {
+                return { width: 0, height: 0 };
+            }
+            
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+
+            const ctx = canvas.getContext('2d');
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0); // Use setTransform for robustness
+            return { width: rect.width, height: rect.height };
+        }
+
+        // ===================================================================
+        // ==                                                               ==
+        // ==                   INITIALIZATION FUNCTIONS                    ==
+        // ==                                                               ==
+        // ===================================================================
+        
+        function initImpedanceSim() {
+            const section = document.getElementById('impedance-simulator');
+            if (!section) return;
+
+            const canvas = section.querySelector('#impedanceCanvas');
+            const ctx = canvas.getContext('2d');
+            const ui = {
+                pauseBtn: section.querySelector('#impedancePauseBtn'),
+                resetBtn: section.querySelector('#impedanceResetBtn'),
+                sliders: {
+                    speed: section.querySelector('#impedanceSpeedSlider'),
+                    amplitude: section.querySelector('#impedanceAmplitudeSlider'),
+                    m1Density: section.querySelector('#m1DensitySlider'),
+                    m1Stiffness: section.querySelector('#m1StiffnessSlider'),
+                    m2Density: section.querySelector('#m2DensitySlider'),
+                    m2Stiffness: section.querySelector('#m2StiffnessSlider'),
+                },
+                values: {
+                    speed: section.querySelector('#impedanceSpeedValue'),
+                    amplitude: section.querySelector('#impedanceAmplitudeValue'),
+                    m1Density: section.querySelector('#m1DensityValue'),
+                    m1Stiffness: section.querySelector('#m1StiffnessValue'),
+                    m2Density: section.querySelector('#m2DensityValue'),
+                    m2Stiffness: section.querySelector('#m2StiffnessValue'),
+                },
+            };
+            let state = { isPaused: false, time: 0, animationFrameId: null, simulationSpeed: 0.3, amplitude: 150, m1: { density: 2, stiffness: 8 }, m2: { density: 8, stiffness: 8 } };
+            const params = { c1: 1, c2: 1, R: 0, T: 1, pulseSpatialWidth1: 150, boundary_phys: 500 };
+            let lastTime = 0;
+            
+            function animate(currentTime) {
+                if (state.isPaused) return;
+                if (!lastTime) lastTime = currentTime;
+                const deltaTime = currentTime - lastTime;
+                state.time += (deltaTime / 16.67) * state.simulationSpeed;
+                lastTime = currentTime;
+                draw();
+                state.animationFrameId = requestAnimationFrame(animate);
+            }
+            function draw() {
+                const { width, height } = sizeCanvas(canvas);
+                if(width === 0) return;
+                ctx.clearRect(0, 0, width, height);
+                const centerY = Math.round(height / 2);
+                const boundary_px = width / 2;
+                drawGridAndBoundary(centerY, boundary_px, width, height);
+                const resultantPath = new Path2D();
+                let isFirstPoint = true;
+                const scale = boundary_px / params.boundary_phys;
+                const timeToBoundary = params.boundary_phys / params.c1;
+                const incCenter = state.time * params.c1;
+                const reflCenter = 2 * params.boundary_phys - state.time * params.c1;
+                const transCenter = params.boundary_phys + (state.time - timeToBoundary) * params.c2;
+                const width2 = params.pulseSpatialWidth1 * (params.c2 / params.c1);
+                for (let x_px = 0; x_px <= width; x_px++) {
+                    const x_phys = x_px / scale;
+                    const y_i = waveFunction(x_phys, incCenter, params.pulseSpatialWidth1);
+                    const y_r = waveFunction(x_phys, reflCenter, params.pulseSpatialWidth1) * params.R;
+                    const y_t = waveFunction(x_phys, transCenter, width2) * params.T;
+                    const y = (x_phys <= params.boundary_phys ? (y_i + y_r) : y_t) * state.amplitude;
+                    const y_draw = centerY - y;
+                    if (isFirstPoint) { resultantPath.moveTo(x_px, y_draw); isFirstPoint = false; }
+                    else resultantPath.lineTo(x_px, y_draw);
+                }
+                ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 2.5; ctx.stroke(resultantPath);
+            }
+            function waveFunction(x, center, width) { const arg = x - center; return (Math.abs(arg) > width * 3.5) ? 0 : Math.exp(-Math.pow(arg / (width / 2), 2)); }
+            function drawGridAndBoundary(cY, bX, w, h) {
+                ctx.beginPath(); ctx.moveTo(0, cY); ctx.lineTo(w, cY);
+                ctx.strokeStyle = '#e5e7eb'; ctx.lineWidth = 1; ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(bX, 0); ctx.lineTo(bX, h);
+                ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 2; ctx.stroke();
+                ctx.font = '500 14px Inter'; ctx.fillStyle = '#6b7280'; ctx.textAlign = 'center';
+                ctx.fillText('Medium 1', bX / 2, 30);
+                ctx.fillText('Medium 2', bX * 1.5, 30);
+            }
+            function handlePlayPause() {
+                state.isPaused = !state.isPaused;
+                ui.pauseBtn.textContent = state.isPaused ? "Play" : "Pause";
+                ui.pauseBtn.classList.toggle("sim-btn-action", !state.isPaused);
+                ui.pauseBtn.classList.toggle("sim-btn-secondary", state.isPaused);
+                if (!state.isPaused) { lastTime = performance.now(); animate(lastTime); }
+            }
+             function handleReset() {
+                cancelAnimationFrame(state.animationFrameId);
+                recalcPhysics();
+                state.time = -params.pulseSpatialWidth1 * 3 / params.c1;
+                lastTime = 0;
+                // Start animation immediately on reset, unless it was already paused
+                if (!state.isPaused) {
+                    animate(performance.now());
+                } else {
+                    draw(); // Draw initial state if paused
+                }
+            }
+            function updateControls() {
+                const ampVal = parseFloat(ui.sliders.amplitude.value);
+                state.amplitude = ((ampVal - 1) / 9) * (300 - 20) + 20;
+                const sVal = parseFloat(ui.sliders.speed.value);
+                state.simulationSpeed = sVal <= 5 ? ((sVal - 1) / 4) * (0.3 - 0.05) + 0.05 : ((sVal - 5) / 5) * (5.0 - 0.3) + 0.3;
+                state.m1.density = parseFloat(ui.sliders.m1Density.value);
+                state.m1.stiffness = parseFloat(ui.sliders.m1Stiffness.value);
+                state.m2.density = parseFloat(ui.sliders.m2Density.value);
+                state.m2.stiffness = parseFloat(ui.sliders.m2Stiffness.value);
+                ui.values.speed.textContent = state.simulationSpeed.toFixed(2);
+                ui.values.amplitude.textContent = state.amplitude.toFixed(0);
+                ui.values.m1Density.textContent = ui.sliders.m1Density.value;
+                ui.values.m1Stiffness.textContent = ui.sliders.m1Stiffness.value;
+                ui.values.m2Density.textContent = ui.sliders.m2Density.value;
+                ui.values.m2Stiffness.textContent = ui.sliders.m2Stiffness.value;
+                recalcPhysics();
+                if (state.isPaused) draw();
+            }
+            function recalcPhysics() {
+                const { m1, m2 } = state; const eps = 1e-9;
+                params.c1 = Math.sqrt(m1.stiffness / (m1.density + eps)) * 15;
+                params.c2 = Math.sqrt(m2.stiffness / (m2.density + eps)) * 15;
+                const Z1 = Math.sqrt(m1.stiffness * m1.density);
+                const Z2 = Math.sqrt(m2.stiffness * m2.density);
+                const denom = Z1 + Z2 + eps;
+                params.R = (Z1 - Z2) / denom;
+                params.T = (2 * Z1) / denom;
+            }
+            
+            Object.values(ui.sliders).forEach(el => el.addEventListener("input", updateControls));
+            ui.pauseBtn.addEventListener('click', handlePlayPause);
+            ui.resetBtn.addEventListener('click', handleReset);
+            updateControls(); // Set initial values from sliders
+            handleReset(); // Initialize time and start animation (if not paused)
+            canvas.addEventListener('redrawCanvas', draw);
+        }
+
+        // --- Master Initializer ---
+        function initializeAll() {
+            initImpedanceSim();
+            // Trigger a resize event to make sure canvases are sized correctly on load
+            window.dispatchEvent(new Event('resize'));
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeAll);
+        } else {
+            initializeAll();
+        }
+        
+    })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,292 @@
+# ACUSTICA – GLOSSARY AND SYMBOLS
+
+# ───────────────────────────────────────────────
+# ACOUSTICS AND PHYSICS TERMS
+# ───────────────────────────────────────────────
+soundboard = main vibrating plate (top) of the guitar body that radiates most of the sound energy
+back_plate = lower plate of the guitar body, dynamically coupled with the top and air cavity
+bridge_torque = rotational moment acting on the bridge due to string tension and break angle
+modal_frequency = natural resonance frequency of a vibration mode
+mode_shape = spatial displacement pattern of the plate at a given resonance
+resonance = frequency where a system exhibits maximum vibration amplitude
+Q_factor = measure of damping, ratio of stored to dissipated energy per cycle
+impedance = mechanical opposition to motion, ratio of force to velocity at a point
+mobility = mechanical admittance, inverse of impedance
+compliance = inverse of stiffness, displacement per unit force
+modal_coupling = energy exchange between different resonant subsystems (top, air, back, strings)
+Helmholtz_resonance = air cavity resonance governed by cavity volume, soundhole size, and coupling with other modes.
+stiffness = resistance of a structure to deformation
+mass_loading = added mass influencing modal frequencies and amplitudes
+damping = energy loss through internal friction or radiation
+phase_response = timing relationship between different frequency components
+transfer_function = ratio of output to input response across frequency
+accelerance = acceleration per unit applied force, measured in FRF testing
+impulse_response = system’s time-domain reaction to a short excitation
+FRF = Frequency Response Function, amplitude and phase vs frequency
+eigenmode = vibration pattern from modal analysis or FEM computation
+orthotropy = directional dependence of mechanical properties with three perpendicular axes
+anisotropy = non-uniform mechanical behavior with respect to direction
+
+# ───────────────────────────────────────────────
+# MATERIAL AND STRUCTURAL TERMS
+# ───────────────────────────────────────────────
+tonewood = wood species selected for instrument making, characterized by stiffness, density, and damping
+density_rho = mass per unit volume, expressed in kg/m³
+E_long = longitudinal Young’s modulus, parallel to grain
+E_cross = cross-grain Young’s modulus
+G_shear = shear modulus, coupling angular deformation to shear stress
+tan_delta = loss tangent, dimensionless damping coefficient
+Q = quality factor, inverse of 2π times tan_delta
+EI = flexural rigidity, product of elastic modulus and second moment of area
+TPC = Tonewood Parameters Characterization, proprietary system for measuring tonewood properties
+moisture_content = percentage of water in wood affecting stiffness and damping
+deflection = displacement of a structure under load
+neutral_axis = axis along which no strain occurs during bending
+bending_stiffness = product EI defining resistance to curvature
+elastic_modulus = intrinsic material stiffness coefficient
+Poisson_ratio = ratio of lateral to longitudinal strain
+longitudinal_wave_velocity = sqrt(E_long / ρ), important for radiation efficiency
+shear_wave_velocity = sqrt(G_shear / ρ)
+orthotropic_plate = plate whose material properties differ along grain directions
+bracing = system of reinforcing beams that defines stiffness distribution of the soundboard
+
+# ───────────────────────────────────────────────
+# GUITAR DESIGN AND MEASUREMENT TERMS
+# ───────────────────────────────────────────────
+bridge_force = total string load transmitted through the bridge to the top
+break_angle = angle formed by the string over the saddle; influences downforce and torque
+saddle_height = distance from soundboard to top of saddle
+bridge_rotation = angular deformation of the bridge under string tension
+bracing_pattern = layout of braces (e.g., X, fan, lattice) shaping stiffness anisotropy
+modal_shapes = spatial vibration patterns corresponding to resonant frequencies
+frequency_response = amplitude of vibration vs excitation frequency
+FEM = Finite Element Method, numerical approach to structural analysis
+FEM_validation = experimental measurement verifying FEM-predicted modal frequencies
+4DOF_model = analytical model describing coupled dynamics of top, back, air, and bridge masses
+monopole_mode = first top mode radiating sound, the center of tonal balance
+dipole_mode = opposite-phase regions on the top, influencing tone color
+tripole_mode = higher-order resonance mode with three main antinodes
+air_mode = first resonance of enclosed air cavity, typically 90–120 Hz
+bridge_mass_effect = influence of bridge weight on bandwidth extension at higher frequencies
+modal_target = desired resonance frequency used for tuning and optimization
+plate_coupling = dynamic interaction between plates through air or structural contact
+modal_mobility = vibration velocity per unit force at a given frequency
+radiation_coefficient = E/ρ ratio determining efficiency of sound radiation
+impedance_matching = condition of optimal energy transfer between string and structure
+
+# ───────────────────────────────────────────────
+# TUNING, OPTIMIZATION, AND MEASUREMENT ROUTINES
+# ───────────────────────────────────────────────
+tuning_step = single operation altering stiffness, mass, or damping to approach target frequency
+mass_reduction = controlled thinning or removal of material to raise mobility
+stiffness_reduction = mechanical adjustment lowering resonance frequency
+modal_alignment = tuning top and back modes to defined frequency ratio (e.g., T(1,1)₁ vs T(1,1)₂)
+frequency_shift = change in modal frequency due to structural modification
+mobility_measurement = evaluation of deflection and mass of a specific mode
+response_curve = measured or simulated FRF showing amplitude vs frequency
+impedance_measurement = determination of input impedance using accelerometer and force sensor
+acoustic_coupling = mutual influence between modes of different parts
+Q_measurement = evaluation of damping factor from FRF width or TPC analysis
+optimization_loop = iterative process adjusting design parameters to meet acoustic goals
+
+# ───────────────────────────────────────────────
+# DATA, SIMULATION, AND ANALYSIS TERMS
+# ───────────────────────────────────────────────
+dataset = structured table of numerical or categorical data used for learning or reference
+parameter_sweep = systematic variation of model parameters to explore sensitivity
+simulation_model = computational representation of acoustic system behavior
+eigenfrequency_analysis = FEM computation of mode frequencies
+mesh_density = discretization parameter in FEM defining element size
+boundary_condition = constraint defining motion limits in simulation
+isotropic_model = simplification assuming uniform material properties
+orthotropic_model = realistic model including wood anisotropy
+validation_dataset = experimental data set used to verify simulation accuracy
+sensitivity_analysis = quantification of model output dependence on parameters
+calibration = adjustment of model parameters to align with measurements
+error_metric = numerical indicator of prediction accuracy (e.g., RMS error)
+frequency_window = spectral range considered in analysis
+log_scale = logarithmic axis used for wide frequency representation
+
+# ───────────────────────────────────────────────
+# PERCEPTUAL AND DESIGN LANGUAGE
+# ───────────────────────────────────────────────
+timbre = perceived tonal quality determined by spectral content and temporal evolution
+projection = ability of the instrument to radiate sound efficiently at distance
+balance = evenness of energy distribution across the spectrum
+responsiveness = speed and sensitivity of the instrument to excitation
+clarity = perceptual separation of partials and transients
+warmth = tonal emphasis toward lower frequencies
+brightness = tonal emphasis toward higher frequencies
+loudness = perceived sound power related to radiated acoustic pressure
+dynamics = range between softest and loudest possible sound
+sustain = duration of vibration before amplitude decays
+coloration = deviation from flat frequency response
+homogeneity = uniform response across strings and positions
+
+# ───────────────────────────────────────────────
+# PEDAGOGICAL AND BRAND TERMS
+# ───────────────────────────────────────────────
+Acustica = intelligent assistant for guitar acoustics created by Giuliano Nicoletti
+Luthiers_Tools = suite of online physical calculators for luthiers developed by Giuliano Nicoletti
+TPC_method = proprietary system for tonewood physical characterization
+Mastering_the_Sound of the acoustic guitar = Giuliano Nicoletti’s book on acoustic guitar theory and design, the language of Acustica
+Mastering_Training = comprehensive course and workshop forming Acustica’s methodological base
+Iulius_Guitars = Giuliano Nicoletti’s luthiery brand specializing in acoustically optimized guitars
+
+# ───────────────────────────────────────────────
+# MODAL NOMENCLATURE AND BODY RESONANCES
+# ───────────────────────────────────────────────
+T(1,1)₁ = air mode, first acoustic resonance of the entire cavity breathing motion through soundhole; 90–110 Hz 
+T(1,1)₂ = soundboard monopole, single antinode resonance; 170–220 Hz 
+T(1,1)₃ = back monopole, single antinode resonance; 200–240 Hz 
+T(2,1) = cross dipole, double antiphase antinodes transversal resonance; 250-400 Hz
+T(1,2) = long dipole, double antiphase antinodes longitudinal resonance; 250-400 Hz
+T(3,1) = cross tripole, triple antiphase antinodes transversal resonance; 400-600 Hz
+T(1,3) = long tripole, triple antiphase antinodes longitudinal resonance; 400-600 Hz
+
+# ───────────────────────────────────────────────
+# SYMBOLS AND PARAMETERS
+# ───────────────────────────────────────────────
+F = Force [N]
+m = Mass [kg]
+a = Acceleration [m/s²]
+σ = Stress [Pa]
+ε = Strain (relative elongation)
+E = Young’s modulus [Pa]
+G = Shear modulus [Pa]
+ρ = Density [kg/m³]
+v_long = Longitudinal wave velocity [m/s]
+v_shear = Shear wave velocity [m/s]
+k = Stiffness [N/m]
+c = Damping coefficient [N·s/m]
+Q = Quality factor
+ζ = Damping ratio
+f₀ = Natural frequency [Hz]
+Δf = Bandwidth [Hz]
+α = Break angle at saddle [rad or °]
+T = String tension [N]
+F_v = Vertical component of string tension [N]
+F_h = Horizontal component of string tension [N]
+d = Lever arm from bridge rotation axis [m]
+τ_bridge = Bridge torque [N·m]
+D₂ = Horizontal distance saddle–pin [mm]
+D₃ = Vertical drop from soundboard [mm]
+c_acoustic = Speed of sound in air [m/s]
+A = Sound-hole area [m²]
+V = Cavity volume [m³]
+L = Effective neck length (Helmholtz) [m]
+f_H = Helmholtz resonance frequency [Hz]
+m_eq = Equivalent monopole mass [kg]
+k_eq = Equivalent monopole stiffness [N/m]
+f_s = Monopole resonance frequency [Hz]
+Mobility_Y = Mechanical mobility (velocity / force) [m/s·N⁻¹]
+I = Second moment of area [m⁴]
+EI = Flexural rigidity [N·m²]
+EI_total = Combined plate + bracing rigidity [N·m²]
+w(x) = Beam deflection [m]
+h = Thickness [m]
+b = Width [m]
+L = Span length [m]
+k_eff, m_eff = Effective stiffness and mass of a mode
+k_couple, c_couple = Coupling stiffness and damping
+Z = Mechanical impedance [N·s/m]
+p = Sound pressure [Pa]
+p_ref = Reference sound pressure (20 µPa) [Pa]
+SPL = Sound Pressure Level [dB]
+Radiation_ratio = E/ρ, acoustic efficiency indicator
+
+# ───────────────────────────────────────────────
+# SYMBOLS AND FORMULAS
+# ───────────────────────────────────────────────
+# Basic Mechanics
+F = m · a
+σ = F / A
+ε = ΔL / L₀
+E = σ / ε
+G = τ / γ
+ρ = m / V
+v_long = √(E / ρ)
+v_shear = √(G / ρ)
+
+# Vibration and Resonance
+f₀ = (1 / 2π) · √(k / m)
+Q = f₀ / Δf
+ζ = 1 / (2Q)
+A(ω) = F / √((k − mω²)² + (cω)²)
+
+# Guitar-Specific Parameters
+F_v = T · sin(α)
+F_h = T · cos(α)
+α = atan(D₃ / D₂)
+τ_bridge = F_v · d
+f_H = (c_acoustic / 2π) · √(A / (V · L))
+
+# Monopole & Tone Profiler
+f_s = (1 / 2π) · √(k_eq / m_eq)
+Mobility = 1 / √(k_eq · m_eq)
+WolfNote ≈ f_s proximity to string resonance
+
+# Modal Quantities (4-DOF Simulator)
+f_mode = (1 / 2π) · √(k_eff / m_eff)
+η = c_eff / (2√(k_eff · m_eff))
+|K − ω²M| = 0
+Modal_coupling = Δf ∝ √(k_couple / (m₁ m₂))
+
+# Flexural and Plate Theory (EI Tool)
+I = (b · h³) / 12
+EI = E · I
+EI_total = EI_plate + Σ(EI_brace · area_fraction)
+w(x) = (F x² / 6EI) · (3L − x)
+f_plate ∝ (h / L²) · √(E / ρ)
+
+# Coupled System Models
+4DOF model → { top, back, air, sides } masses coupled by k_ij
+|K − ω²M| = 0 → eigenfrequencies
+Coupling stiffness k_ij and damping c_ij control modal interaction
+
+# Acoustic Quantities
+Z = F / v
+Y = 1 / Z
+Radiation_ratio = E / ρ
+SPL = 20 · log₁₀(p / p_ref)
+
+
+---
+# ✅ Harmonization Notes
+- Radiation coefficient corrected to E / ρ³.
+- Units for stiffness standardized to N/m.
+- Glossary and training material aligned on modal nomenclature and formulas.
+
+## Quick-Reference Table of Symbols and Units
+| Symbol       | Parameter                          | Unit           | Description                                      |
+|-------------|-----------------------------------|---------------|--------------------------------------------------|
+| F           | Force                             | N             | Applied load                                     |
+| m           | Mass                              | kg / g        | Amount of matter                                 |
+| a           | Acceleration                      | m/s²          | Rate of change of velocity                       |
+| σ           | Stress                            | Pa            | Force per unit area                              |
+| ε           | Strain                            | –             | Relative deformation                             |
+| E           | Young’s modulus                   | Pa            | Material stiffness                               |
+| G           | Shear modulus                     | Pa            | Resistance to shear                              |
+| ρ           | Density                           | kg/m³         | Mass per unit volume                             |
+| v_long      | Longitudinal wave velocity        | m/s           | Speed of sound along grain                       |
+| v_shear     | Shear wave velocity               | m/s           | Speed of shear waves                             |
+| k           | Stiffness                         | N/m           | Resistance to deformation                        |
+| c           | Damping coefficient               | N·s/m         | Energy dissipation                               |
+| Q           | Quality factor                    | –             | Ratio of stored to lost energy                   |
+| ζ           | Damping ratio                     | –             | Measure of damping                               |
+| f₀, f_s     | Natural / monopole frequency      | Hz            | Resonance frequency                              |
+| α           | Break angle                       | rad / °       | String angle over saddle                         |
+| T           | String tension                    | N             | Pulling force of string                          |
+| F_v, F_h    | Vertical / horizontal force       | N             | Components of string tension                     |
+| τ_bridge    | Bridge torque                     | N·m           | Rotational moment on bridge                      |
+| A           | Soundhole area                    | m²            | Aperture size                                    |
+| V           | Cavity volume                     | m³            | Internal air volume                              |
+| L           | Effective neck length (Helmholtz) | m             | Acoustic length                                   |
+| EI          | Flexural rigidity                 | N·m²          | Structural bending stiffness                     |
+| I           | Second moment of area             | m⁴            | Geometric property for bending                   |
+| SPL         | Sound Pressure Level              | dB            | Acoustic output                                   |
+| p           | Sound pressure                    | Pa            | Instantaneous pressure                            |
+| p_ref       | Reference pressure                | Pa            | 20 μPa (threshold of hearing)                    |
+| Radiation ratio | Acoustic efficiency indicator  | –             | E / ρ³                                           |
+
+---
