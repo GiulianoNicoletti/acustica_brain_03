@@ -1,4 +1,3 @@
 .env
 Acustica_API_Key.txt
-vectorstore/
 data/raw_pdf/

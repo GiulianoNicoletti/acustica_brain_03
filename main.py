@@ -1,3 +1,8 @@
+import sys
+__import__('pysqlite3')
+sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
+
+# ... your existing imports (from fastapi import FastAPI...) follow here
 # ───────────────────────────────────────────────
 # ACUSTICA — FastAPI Retriever (Collection Debug)
 # ───────────────────────────────────────────────
