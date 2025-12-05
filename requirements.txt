@@ -1,8 +1,10 @@
-langchain
-langchain-openai
-langchain-chroma
-chromadb
-openai
-python-dotenv
 fastapi
 uvicorn
+gunicorn
+python-dotenv
+langchain
+langchain-core
+langchain-chroma
+langchain-openai
+chromadb
+pydantic
