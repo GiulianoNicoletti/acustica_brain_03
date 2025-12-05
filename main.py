@@ -1,16 +1,16 @@
 # ───────────────────────────────────────────────
-# ACUSTICA — FastAPI Retriever (Rev03 Render-Ready)
+# ACUSTICA — FastAPI Retriever (Stable Cloud Version)
+# Retrieves from local ChromaDB (vectorstore) and answers via OpenAI
 # ───────────────────────────────────────────────
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from pathlib import Path
 from dotenv import load_dotenv
-import os, shutil
-from asyncio import to_thread
+from pathlib import Path
+import os
 
-# LangChain + Chroma
+# LangChain imports
 from langchain_chroma import Chroma
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
@@ -18,58 +18,37 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 
 # ───────────────────────────────────────────────
-# 1. Setup and configuration
+# 1. Setup
 # ───────────────────────────────────────────────
-
 BASE_DIR = Path(__file__).resolve().parent
-SRC_VECTOR_DIR = BASE_DIR / "vectorstore"
+VECTOR_DIR = BASE_DIR / "vectorstore"
 
 load_dotenv()
 api_key = os.getenv("OPENAI_API_KEY")
 if not api_key:
-    raise EnvironmentError("Missing OPENAI_API_KEY in environment")
+    raise EnvironmentError("Missing OPENAI_API_KEY in .env file")
 
-# Select writable directory for Chroma (Render /tmp or mounted /data)
-RUNTIME_VECTOR_DIR = Path(os.getenv("VECTOR_DIR", "/tmp/vectorstore"))
+# Disable Chroma telemetry (Render blocks analytics, this fixes CollectionQueryEvent error)
+import chromadb
+chromadb.config.settings.anonymized_telemetry = False
 
-# Copy vectorstore from repo to runtime directory if needed
-if not RUNTIME_VECTOR_DIR.exists():
-    if SRC_VECTOR_DIR.exists():
-        RUNTIME_VECTOR_DIR.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copytree(SRC_VECTOR_DIR, RUNTIME_VECTOR_DIR)
-    else:
-        RUNTIME_VECTOR_DIR.mkdir(parents=True, exist_ok=True)
-
-# Disable Chroma telemetry for cleaner logs
-try:
-    from chromadb.config import Settings as ChromaSettings
-    CHROMA_SETTINGS = ChromaSettings(anonymized_telemetry=False)
-except Exception:
-    CHROMA_SETTINGS = None
-
-# Initialize embeddings + retriever
+# Load vectorstore
 embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
-
-chroma_kwargs = dict(
+vectorstore = Chroma(
     collection_name="acustica_corpus_v1",
     embedding_function=embeddings,
-    persist_directory=str(RUNTIME_VECTOR_DIR),
+    persist_directory=str(VECTOR_DIR)
 )
-if CHROMA_SETTINGS:
-    chroma_kwargs["client_settings"] = CHROMA_SETTINGS
-
-vectorstore = Chroma(**chroma_kwargs)
 retriever = vectorstore.as_retriever(search_kwargs={"k": 4})
 
-# ───────────────────────────────────────────────
-# 2. LLM + Prompt chain
-# ───────────────────────────────────────────────
-
+# LLM setup
 llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.2)
 
+# Prompt template
 prompt = ChatPromptTemplate.from_template("""
 You are Acustica, assistant for luthiers and acoustic engineers.
-Use the retrieved context to answer clearly and precisely.
+Use the retrieved context to answer clearly, precisely, and technically.
+If the context is missing, respond that no indexed documents were found.
 
 Context:
 {context}
@@ -78,6 +57,7 @@ Question:
 {question}
 """)
 
+# Chain definition
 chain = (
     {"context": retriever, "question": RunnablePassthrough()}
     | prompt
@@ -86,12 +66,11 @@ chain = (
 )
 
 # ───────────────────────────────────────────────
-# 3. FastAPI Application
+# 2. FastAPI App
 # ───────────────────────────────────────────────
-
 app = FastAPI(title="Acustica API")
 
-# CORS (open for now; tighten later)
+# Allow requests from any domain (for testing)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -100,21 +79,19 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Request schema
 class Question(BaseModel):
     question: str
 
-# Health and root endpoints
 @app.get("/")
 def home():
-    return {"message": "🎸 Acustica API is running!"}
+    return {"message": "🎸 Acustica API is running and connected to vectorstore!"}
 
-@app.get("/healthz")
-def health():
-    return {"ok": True}
-
-# Async /ask endpoint — runs LangChain in background thread
 @app.post("/ask")
 async def ask(q: Question):
-    answer = await to_thread(chain.invoke, q.question)
+    answer = chain.invoke(q.question)
     return {"answer": answer}
+
+# ───────────────────────────────────────────────
+# Run command for local testing (not needed on Render)
+# uvicorn main:app --host 0.0.0.0 --port 8000
+# ───────────────────────────────────────────────
