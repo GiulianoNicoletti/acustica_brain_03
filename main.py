@@ -1,5 +1,6 @@
 # ───────────────────────────────────────────────
-# ACUSTICA — FastAPI Retriever (Render Version)
+# ACUSTICA — FastAPI Retriever (Debug Version)
+# This version logs vectorstore path & contents
 # ───────────────────────────────────────────────
 
 from fastapi import FastAPI
@@ -8,15 +9,7 @@ from pydantic import BaseModel
 from dotenv import load_dotenv
 from pathlib import Path
 import os
-import chromadb
 
-# Disable Chroma telemetry safely (Render blocks outbound analytics)
-try:
-    chromadb.config.Settings.anonymized_telemetry = False
-except Exception:
-    pass
-
-# LangChain imports
 from langchain_chroma import Chroma
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
@@ -29,12 +22,20 @@ from langchain_core.runnables import RunnablePassthrough
 BASE_DIR = Path(__file__).resolve().parent
 VECTOR_DIR = BASE_DIR / "vectorstore"
 
+# Debug logs (to check Render deployment)
+print("VECTORSTORE PATH:", VECTOR_DIR)
+if VECTOR_DIR.exists():
+    print("VECTORSTORE CONTENTS:", os.listdir(VECTOR_DIR))
+else:
+    print("VECTORSTORE DIRECTORY MISSING!")
+
+# Load environment variables
 load_dotenv()
 api_key = os.getenv("OPENAI_API_KEY")
 if not api_key:
     raise EnvironmentError("Missing OPENAI_API_KEY in .env file")
 
-# Embeddings and vectorstore
+# Load embeddings and Chroma vectorstore
 embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
 vectorstore = Chroma(
     collection_name="acustica_corpus_v1",
@@ -43,10 +44,10 @@ vectorstore = Chroma(
 )
 retriever = vectorstore.as_retriever(search_kwargs={"k": 4})
 
-# Chat model
+# Define model
 llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.2)
 
-# Prompt
+# Prompt template
 prompt = ChatPromptTemplate.from_template("""
 You are Acustica, assistant for luthiers and acoustic engineers.
 Use the retrieved context to answer clearly and precisely.
@@ -71,7 +72,7 @@ chain = (
 # ───────────────────────────────────────────────
 app = FastAPI(title="Acustica API")
 
-# Allow all origins for testing (CORS)
+# Allow CORS for testing (temporary)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -80,20 +81,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Request schema
 class Question(BaseModel):
     question: str
 
+# Home route
 @app.get("/")
 def home():
     return {"message": "🎸 Acustica API is running!"}
 
+# Ask route
 @app.post("/ask")
 async def ask(q: Question):
     answer = chain.invoke(q.question)
     return {"answer": answer}
-
-
-# ───────────────────────────────────────────────
-# Run locally with:
-# uvicorn main:app --host 0.0.0.0 --port 8000
-# ───────────────────────────────────────────────
