@@ -9,9 +9,10 @@ from dotenv import load_dotenv
 import os
 import shutil
 
+# LangChain (stable with 0.3.27 stack)
 from langchain_chroma import Chroma
 from langchain_openai import OpenAIEmbeddings
-from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import TextLoader
 
 # ───────────────────────────────────────────────
