@@ -1,6 +1,6 @@
 # ───────────────────────────────────────────────
-# Acustica Brain — Phase 3 Retriever (Balanced concise + Debug)
-# Adds optional --debug flag to show full retrieved context
+# Acustica Brain — Phase 3 Retriever (Conversational Socratic version)
+# Giuliano Nicoletti — December 2025
 # ───────────────────────────────────────────────
 
 from pathlib import Path
@@ -21,7 +21,7 @@ DEBUG_MODE = "--debug" in sys.argv
 
 BASE_DIR = Path(__file__).resolve().parent
 VECTOR_DIR = BASE_DIR / "vectorstore"
-COLLECTION_NAME = "acustica_corpus_v1"
+COLLECTION_NAME = "acustica_corpus_v2"   # Updated to new version
 
 load_dotenv()
 api_key = os.getenv("OPENAI_API_KEY")
@@ -45,18 +45,28 @@ db = Chroma(
 )
 
 retriever = db.as_retriever(search_type="mmr", search_kwargs={"k": 10, "lambda_mult": 0.5})
-llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.2, max_tokens=350)
+llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.35, max_tokens=400)
 
 # ───────────────────────────────────────────────
-# 3. Balanced concise prompt
+# 3. Socratic, human prompt definition
 # ───────────────────────────────────────────────
 prompt = ChatPromptTemplate.from_template("""
-You are Acustica, an assistant for luthiers and acoustic engineers.
+You are **Acustica** — the digital assistant created by Giuliano Nicoletti to guide
+luthiers and acoustic engineers. You speak like a person who has spent decades
+around workbenches and oscilloscopes: curious, precise, and slightly witty.
 
-Use only the retrieved context to give a short, coherent explanation
-of the physical and acoustical mechanisms behind the topic asked.
-Write in clear technical language, 3–8 sentences maximum.
-Avoid enumerations, repetition, or generic textbook statements.
+You explain the acoustics of guitars — vibration, resonance, tonewood, structure —
+with clarity rooted in physics, not superstition. You teach by conversation: 
+ask short, relevant questions back to the user to understand their intent or guide
+them toward deeper reasoning, as in a Socratic dialogue.
+
+You may use analogies, occasional humor, or relatable imagery to make physics feel
+alive, but always stay accurate and humble — never mystical or verbose.
+
+Your answers should sound natural, like a mentor in a workshop:
+• 4–10 lines maximum
+• one coherent paragraph (no bullet lists)
+• use warm but professional tone
 
 <context>
 {context}
@@ -65,6 +75,9 @@ Avoid enumerations, repetition, or generic textbook statements.
 Question: {question}
 """)
 
+# ───────────────────────────────────────────────
+# 4. Chain setup
+# ───────────────────────────────────────────────
 chain = (
     {"context": RunnablePassthrough(), "question": RunnablePassthrough()}
     | prompt
@@ -73,20 +86,20 @@ chain = (
 )
 
 # ───────────────────────────────────────────────
-# 4. Interactive CLI loop with confidence and debug
+# 5. Interactive CLI loop with optional debug
 # ───────────────────────────────────────────────
-print("\n🎸  Acustica Brain — Phase 3 Retriever (Balanced concise)")
+print("\n🎸  Acustica Brain — Phase 3 Retriever (Conversational Socratic)")
 if DEBUG_MODE:
     print("🔍 Debug mode ON — full retrieved context will be shown\n")
 else:
     print("Run with '--debug' to display full retrieved text for each query.\n")
 
-print("Ask questions grounded in your embedded corpus (type 'exit' to quit)\n")
+print("Ask about acoustics, design, or luthiery (type 'exit' to quit)\n")
 
 while True:
     query = input("❓ Ask › ").strip()
     if query.lower() in ["exit", "quit", "q"]:
-        print("👋 Bye!")
+        print("👋 Bye! Keep building and listening.")
         break
 
     print("\n💭 Thinking...\n")

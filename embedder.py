@@ -1,5 +1,5 @@
 # ───────────────────────────────────────────────
-# Acustica Brain — Embedder (v2, with backup)
+# Acustica Brain — Embedder (v2, corpus only)
 # Builds a Chroma vectorstore from verified text files
 # Giuliano Nicoletti — December 2025
 # ───────────────────────────────────────────────
@@ -20,7 +20,7 @@ from langchain_community.document_loaders import TextLoader
 BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / "data"
 VECTOR_DIR = BASE_DIR / "vectorstore"
-COLLECTION_NAME = "acustica_corpus_v1"
+COLLECTION_NAME = "acustica_corpus_v2"
 
 # Load API key
 load_dotenv()
@@ -38,10 +38,10 @@ if not api_key:
     raise EnvironmentError("❌ Missing OPENAI_API_KEY in .env or Acustica_API_Key.txt")
 
 # ───────────────────────────────────────────────
-# 2. Collect text files
+# 2. Collect text files (only clean corpus)
 # ───────────────────────────────────────────────
 def collect_text_files():
-    include_folders = ["clean_verified", "apps", "brand"]
+    include_folders = ["clean_verified", "brand"]
     text_files = []
     for folder in include_folders:
         folder_path = DATA_DIR / folder
@@ -51,7 +51,7 @@ def collect_text_files():
 
 text_files = collect_text_files()
 if not text_files:
-    raise FileNotFoundError("❌ No .txt files found in clean_verified, apps, or brand folders")
+    raise FileNotFoundError("❌ No .txt files found in clean_verified or brand folders")
 
 print(f"[INFO] Found {len(text_files)} text files to embed")
 
