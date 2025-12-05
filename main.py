@@ -42,7 +42,7 @@ if not api_key:
 # Load embeddings and Chroma vectorstore
 embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
 vectorstore = Chroma(
-    collection_name="acustica_corpus_v1",
+    collection_name="acustica_corpus_v2",
     embedding_function=embeddings,
     persist_directory=str(VECTOR_DIR)
 )
