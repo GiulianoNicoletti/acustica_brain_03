@@ -1,3 +1,4 @@
 .env
 Acustica_API_Key.txt
 data/raw_pdf/
+.venv/
