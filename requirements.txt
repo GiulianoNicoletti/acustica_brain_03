@@ -7,8 +7,8 @@ pydantic==2.9.2
 requests==2.32.3
 tiktoken==0.7.0
 
-# LangChain ecosystem (mutually compatible family)
-langchain==0.3.10
+# LangChain ecosystem (0.3.13 unified line)
+langchain==0.3.13
 langchain-core==0.3.27
 langchain-community==0.3.13
 langchain-chroma==0.1.4
