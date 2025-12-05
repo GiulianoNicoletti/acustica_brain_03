@@ -1,15 +1,16 @@
 # ───────────────────────────────────────────────
-# ACUSTICA — FastAPI Retriever
-# turns retriever.py into a small web service
+# ACUSTICA — FastAPI Retriever (Rev03 Render-Ready)
 # ───────────────────────────────────────────────
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from dotenv import load_dotenv
 from pathlib import Path
-import os
+from dotenv import load_dotenv
+import os, shutil
+from asyncio import to_thread
 
+# LangChain + Chroma
 from langchain_chroma import Chroma
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
@@ -17,23 +18,52 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 
 # ───────────────────────────────────────────────
-# 1. Setup
+# 1. Setup and configuration
 # ───────────────────────────────────────────────
+
 BASE_DIR = Path(__file__).resolve().parent
-VECTOR_DIR = BASE_DIR / "vectorstore"
+SRC_VECTOR_DIR = BASE_DIR / "vectorstore"
 
 load_dotenv()
 api_key = os.getenv("OPENAI_API_KEY")
 if not api_key:
-    raise EnvironmentError("Missing OPENAI_API_KEY in .env file")
+    raise EnvironmentError("Missing OPENAI_API_KEY in environment")
 
+# Select writable directory for Chroma (Render /tmp or mounted /data)
+RUNTIME_VECTOR_DIR = Path(os.getenv("VECTOR_DIR", "/tmp/vectorstore"))
+
+# Copy vectorstore from repo to runtime directory if needed
+if not RUNTIME_VECTOR_DIR.exists():
+    if SRC_VECTOR_DIR.exists():
+        RUNTIME_VECTOR_DIR.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copytree(SRC_VECTOR_DIR, RUNTIME_VECTOR_DIR)
+    else:
+        RUNTIME_VECTOR_DIR.mkdir(parents=True, exist_ok=True)
+
+# Disable Chroma telemetry for cleaner logs
+try:
+    from chromadb.config import Settings as ChromaSettings
+    CHROMA_SETTINGS = ChromaSettings(anonymized_telemetry=False)
+except Exception:
+    CHROMA_SETTINGS = None
+
+# Initialize embeddings + retriever
 embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
-vectorstore = Chroma(
+
+chroma_kwargs = dict(
     collection_name="acustica_corpus_v1",
     embedding_function=embeddings,
-    persist_directory=str(VECTOR_DIR)
+    persist_directory=str(RUNTIME_VECTOR_DIR),
 )
+if CHROMA_SETTINGS:
+    chroma_kwargs["client_settings"] = CHROMA_SETTINGS
+
+vectorstore = Chroma(**chroma_kwargs)
 retriever = vectorstore.as_retriever(search_kwargs={"k": 4})
+
+# ───────────────────────────────────────────────
+# 2. LLM + Prompt chain
+# ───────────────────────────────────────────────
 
 llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.2)
 
@@ -56,11 +86,12 @@ chain = (
 )
 
 # ───────────────────────────────────────────────
-# 2. FastAPI App
+# 3. FastAPI Application
 # ───────────────────────────────────────────────
+
 app = FastAPI(title="Acustica API")
 
-# Allow requests from any site (for testing)
+# CORS (open for now; tighten later)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -69,14 +100,21 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Request schema
 class Question(BaseModel):
     question: str
 
+# Health and root endpoints
 @app.get("/")
 def home():
     return {"message": "🎸 Acustica API is running!"}
 
+@app.get("/healthz")
+def health():
+    return {"ok": True}
+
+# Async /ask endpoint — runs LangChain in background thread
 @app.post("/ask")
 async def ask(q: Question):
-    answer = chain.invoke(q.question)
+    answer = await to_thread(chain.invoke, q.question)
     return {"answer": answer}
