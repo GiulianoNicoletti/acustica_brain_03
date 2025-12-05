@@ -1,6 +1,5 @@
 # ───────────────────────────────────────────────
-# ACUSTICA — FastAPI Retriever (Debug Version)
-# This version logs vectorstore path & contents
+# ACUSTICA — FastAPI Retriever (Collection Debug)
 # ───────────────────────────────────────────────
 
 from fastapi import FastAPI
@@ -22,7 +21,7 @@ from langchain_core.runnables import RunnablePassthrough
 BASE_DIR = Path(__file__).resolve().parent
 VECTOR_DIR = BASE_DIR / "vectorstore"
 
-# Debug logs (to check Render deployment)
+# Debug logs to confirm Render paths
 print("VECTORSTORE PATH:", VECTOR_DIR)
 if VECTOR_DIR.exists():
     print("VECTORSTORE CONTENTS:", os.listdir(VECTOR_DIR))
@@ -43,6 +42,14 @@ vectorstore = Chroma(
     persist_directory=str(VECTOR_DIR)
 )
 retriever = vectorstore.as_retriever(search_kwargs={"k": 4})
+
+# 🧠 Diagnostic check — see if Chroma actually loaded the collection
+print("🧠 Checking Chroma collections…")
+try:
+    collections = vectorstore._client.list_collections()
+    print("Available collections:", [c.name for c in collections])
+except Exception as e:
+    print("Error listing collections:", e)
 
 # Define model
 llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.2)
