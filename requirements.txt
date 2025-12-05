@@ -5,7 +5,7 @@ gunicorn==23.0.0
 python-dotenv==1.0.1
 pydantic==2.9.2
 requests==2.32.3
-tiktoken==0.7.0
+tiktoken==0.6.0
 
 # LangChain & Chroma (stable + mutually compatible)
 langchain==0.3.9
