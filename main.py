@@ -3,17 +3,19 @@ __import__('pysqlite3')
 sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 
 # ───────────────────────────────────────────────
-# ACUSTICA — Multilingual Conversational Retriever (Stable Core)
-# Base: validated mentor-style version by Giuliano Nicoletti
-# Upgrade: automatic language detection + translation in/out
+# ACUSTICA — Multilingual Conversational Retriever + Image Analysis
+# Author: Giuliano Nicoletti
+# Base: validated V2 corpus retriever
+# Added: multilingual support and spectrum image analysis
 # ───────────────────────────────────────────────
 
-from fastapi import FastAPI
+from fastapi import FastAPI, File, UploadFile, Form
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
 from pathlib import Path
 import os
+import base64
 
 from langchain_chroma import Chroma
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
@@ -55,7 +57,7 @@ except Exception as e:
     print("Error listing collections:", e)
 
 # ───────────────────────────────────────────────
-# 2. LLM, Memory, Prompt (unchanged mentor tone)
+# 2. LLM, Memory, Prompt (mentor tone)
 # ───────────────────────────────────────────────
 llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.3)
 memory = ConversationBufferMemory(memory_key="history", input_key="question", return_messages=False)
@@ -120,9 +122,9 @@ def translate_back(answer: str, lang: str) -> str:
     return back.content.strip()
 
 # ───────────────────────────────────────────────
-# 4. FastAPI App
+# 4. FastAPI App + Endpoints
 # ───────────────────────────────────────────────
-app = FastAPI(title="Acustica — Multilingual Conversational Retriever")
+app = FastAPI(title="Acustica — Multilingual Conversational + Image Analysis")
 
 app.add_middleware(
     CORSMiddleware,
@@ -137,8 +139,9 @@ class Question(BaseModel):
 
 @app.get("/")
 def home():
-    return {"message": "🎸 Acustica — Multilingual Conversational Retriever running!"}
+    return {"message": "🎸 Acustica — Multilingual Conversational Retriever with Image Analysis running!"}
 
+# Text Q/A endpoint (unchanged)
 @app.post("/ask")
 async def ask(q: Question):
     translated_q, lang = translate_to_english_if_needed(q.question)
@@ -146,3 +149,27 @@ async def ask(q: Question):
     memory.save_context({"question": q.question}, {"answer": answer})
     final = translate_back(answer, lang)
     return {"answer": final}
+
+# 🆕 Image upload endpoint
+@app.post("/ask_image")
+async def ask_image(file: UploadFile = File(...), question: str = Form("Describe this spectrum")):
+    # Read and encode image
+    image_bytes = await file.read()
+    image_b64 = base64.b64encode(image_bytes).decode("utf-8")
+
+    # Ask the vision model
+    vision = ChatOpenAI(model="gpt-4o-mini", temperature=0.3)
+    vision_prompt = [
+        {"role": "system", "content": "You are Acustica, an expert in interpreting acoustic frequency response graphs."},
+        {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": f"Analyze this image and describe what it shows in terms of acoustic guitar behavior.\n{question}"},
+                {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{image_b64}"}}
+            ]
+        }
+    ]
+
+    vision_response = vision.invoke(vision_prompt)
+    description = vision_response.content.strip()
+    return {"analysis": description}
