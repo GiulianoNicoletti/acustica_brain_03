@@ -3,8 +3,8 @@ __import__('pysqlite3')
 sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 
 # ───────────────────────────────────────────────
-# ACUSTICA — FastAPI Conversational Retriever
-# Based on working v2 (with collection debug)
+# ACUSTICA — FastAPI Retriever (Strictly Grounded)
+# Based on your verified working version
 # ───────────────────────────────────────────────
 
 from fastapi import FastAPI
@@ -19,8 +19,6 @@ from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
-from langchain.memory import ConversationBufferMemory
-from langchain.chains import LLMChain
 
 # ───────────────────────────────────────────────
 # 1. Setup
@@ -59,46 +57,36 @@ except Exception as e:
     print("Error listing collections:", e)
 
 # ───────────────────────────────────────────────
-# 2. Model, Memory, and Prompt
+# 2. Model and Prompt (strict grounding)
 # ───────────────────────────────────────────────
-llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.5)
-
-memory = ConversationBufferMemory(
-    memory_key="history",
-    input_key="question",
-    return_messages=False
-)
+llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.2)
 
 prompt = ChatPromptTemplate.from_template("""
-You are Acustica, assistant for luthiers and acoustic engineers,
-created by Giuliano Nicoletti. Use retrieved technical context
-when available; if not, answer from your deep knowledge of
-guitar acoustics and tonewood physics.
+You are Acustica, the technical assistant for luthiers and acoustic engineers,
+created by Giuliano Nicoletti.
 
-Be detailed, structured, and natural — not curt. Write in full
-sentences suited for technical readers. At the end, propose ONE
-short, relevant follow-up question to keep the discussion alive.
+Use *only* the retrieved context below to answer. Do not invent, generalize, or
+introduce information not contained in the corpus. If the context lacks the
+necessary details, say briefly that no specific data was found in the Acustica
+corpus.
 
-──────────────────────────────────────────────
-Conversation so far:
-{history}
+Keep answers concise, factual, and faithful to the retrieved source material.
+After answering, suggest one short follow-up question that stays strictly within
+the topic of the retrieved content.
+
 ──────────────────────────────────────────────
 Retrieved context:
 {context}
 ──────────────────────────────────────────────
-User:
+User question:
 {question}
 ──────────────────────────────────────────────
 Answer:
 """)
 
-# Define retrieval + LLM chain with memory
+# Retrieval + LLM chain
 chain = (
-    {
-        "context": retriever | (lambda docs: "\n\n".join(d.page_content for d in docs)),
-        "question": RunnablePassthrough(),
-        "history": lambda _: memory.load_memory_variables({}).get("history", "")
-    }
+    {"context": retriever, "question": RunnablePassthrough()}
     | prompt
     | llm
     | StrOutputParser()
@@ -107,7 +95,7 @@ chain = (
 # ───────────────────────────────────────────────
 # 3. FastAPI App
 # ───────────────────────────────────────────────
-app = FastAPI(title="Acustica Conversational API")
+app = FastAPI(title="Acustica API")
 
 app.add_middleware(
     CORSMiddleware,
@@ -122,10 +110,9 @@ class Question(BaseModel):
 
 @app.get("/")
 def home():
-    return {"message": "🎸 Acustica Conversational API is running!"}
+    return {"message": "🎸 Acustica API is running (strictly grounded mode)!"}
 
 @app.post("/ask")
 async def ask(q: Question):
     answer = chain.invoke(q.question)
-    memory.save_context({"question": q.question}, {"answer": answer})
     return {"answer": answer}
