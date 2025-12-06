@@ -2,9 +2,9 @@ import sys
 __import__('pysqlite3')
 sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 
-# ... your existing imports (from fastapi import FastAPI...) follow here
 # ───────────────────────────────────────────────
-# ACUSTICA — FastAPI Retriever (Collection Debug)
+# ACUSTICA — FastAPI Conversational Retriever
+# Based on working v2 (with collection debug)
 # ───────────────────────────────────────────────
 
 from fastapi import FastAPI
@@ -19,6 +19,8 @@ from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
+from langchain.memory import ConversationBufferMemory
+from langchain.chains import LLMChain
 
 # ───────────────────────────────────────────────
 # 1. Setup
@@ -56,35 +58,57 @@ try:
 except Exception as e:
     print("Error listing collections:", e)
 
-# Define model
-llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.2)
+# ───────────────────────────────────────────────
+# 2. Model, Memory, and Prompt
+# ───────────────────────────────────────────────
+llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.5)
 
-# Prompt template
+memory = ConversationBufferMemory(
+    memory_key="history",
+    input_key="question",
+    return_messages=False
+)
+
 prompt = ChatPromptTemplate.from_template("""
-You are Acustica, assistant for luthiers and acoustic engineers.
-Use the retrieved context to answer clearly and precisely.
+You are Acustica, assistant for luthiers and acoustic engineers,
+created by Giuliano Nicoletti. Use retrieved technical context
+when available; if not, answer from your deep knowledge of
+guitar acoustics and tonewood physics.
 
-Context:
+Be detailed, structured, and natural — not curt. Write in full
+sentences suited for technical readers. At the end, propose ONE
+short, relevant follow-up question to keep the discussion alive.
+
+──────────────────────────────────────────────
+Conversation so far:
+{history}
+──────────────────────────────────────────────
+Retrieved context:
 {context}
-
-Question:
+──────────────────────────────────────────────
+User:
 {question}
+──────────────────────────────────────────────
+Answer:
 """)
 
-# Retrieval + LLM chain
+# Define retrieval + LLM chain with memory
 chain = (
-    {"context": retriever, "question": RunnablePassthrough()}
+    {
+        "context": retriever | (lambda docs: "\n\n".join(d.page_content for d in docs)),
+        "question": RunnablePassthrough(),
+        "history": lambda _: memory.load_memory_variables({}).get("history", "")
+    }
     | prompt
     | llm
     | StrOutputParser()
 )
 
 # ───────────────────────────────────────────────
-# 2. FastAPI App
+# 3. FastAPI App
 # ───────────────────────────────────────────────
-app = FastAPI(title="Acustica API")
+app = FastAPI(title="Acustica Conversational API")
 
-# Allow CORS for testing (temporary)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -93,17 +117,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Request schema
 class Question(BaseModel):
     question: str
 
-# Home route
 @app.get("/")
 def home():
-    return {"message": "🎸 Acustica API is running!"}
+    return {"message": "🎸 Acustica Conversational API is running!"}
 
-# Ask route
 @app.post("/ask")
 async def ask(q: Question):
     answer = chain.invoke(q.question)
+    memory.save_context({"question": q.question}, {"answer": answer})
     return {"answer": answer}
