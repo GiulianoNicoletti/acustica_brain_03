@@ -3,7 +3,7 @@ __import__('pysqlite3')
 sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 
 # ───────────────────────────────────────────────
-# ACUSTICA — Conversational Retriever with Image Analysis
+# ACUSTICA — Conversational + Visual Reasoning API
 # Author: Giuliano Nicoletti
 # ───────────────────────────────────────────────
 
@@ -151,31 +151,37 @@ async def ask(q: Question):
     return {"answer": answer}
 
 # ───────────────────────────────────────────────
-# 4. Image Analysis Endpoint
+# 4. Image Analysis Endpoint — Context-Aware
 # ───────────────────────────────────────────────
 @app.post("/analyze_image")
-async def analyze_image(file: UploadFile = File(...), question: str = "Describe what you see."):
+async def analyze_image(
+    file: UploadFile = File(...),
+    question: str = "Describe the guitar frequency response shown."
+):
     contents = await file.read()
     image_base64 = base64.b64encode(contents).decode("utf-8")
     image_data_url = f"data:{file.content_type};base64,{image_base64}"
 
+    domain_context = (
+        "You are Acustica, Giuliano Nicoletti’s assistant for guitar acoustics. "
+        "You interpret frequency-response graphs of acoustic guitars, not speakers. "
+        "Assume the plot shows SPL (dB) vs frequency (Hz). "
+        "Identify peaks corresponding to the air mode T(1,1)₁, the top monopole T(1,1)₂, "
+        "and the back monopole T(1,1)₃ when visible. "
+        "Estimate their frequencies, comment on coupling and tonal implications "
+        "such as bass strength, resonance balance, and damping behaviour. "
+        "Be concise, factual, and avoid speculation."
+    )
+
     vision_prompt = [
-        {
-            "role": "system",
-            "content": (
-                "You are Acustica, the visual acoustic assistant by Giuliano Nicoletti. "
-                "Interpret uploaded images such as frequency-response graphs or spectra. "
-                "Be factual, concise, and physically accurate. "
-                "If peaks or modes appear, identify them numerically when visible."
-            )
-        },
+        {"role": "system", "content": domain_context},
         {
             "role": "user",
             "content": [
                 {"type": "text", "text": question},
-                {"type": "image_url", "image_url": {"url": image_data_url}}  # ✅ Correct structure
-            ]
-        }
+                {"type": "image_url", "image_url": {"url": image_data_url}},
+            ],
+        },
     ]
 
     vision_llm = ChatOpenAI(model="gpt-4o", temperature=0.2)
