@@ -3,10 +3,9 @@ __import__('pysqlite3')
 sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 
 # ───────────────────────────────────────────────
-# ACUSTICA — Conversational Retriever with Context Synthesis
-# Author: Giuliano Nicoletti
-# Purpose: coherent, physics-grounded reasoning from corpus
-# Multilingual version — automatic language detection and translation
+# ACUSTICA — Multilingual Conversational Retriever (Stable Core)
+# Base: validated mentor-style version by Giuliano Nicoletti
+# Upgrade: automatic language detection + translation in/out
 # ───────────────────────────────────────────────
 
 from fastapi import FastAPI
@@ -20,11 +19,8 @@ from langchain_chroma import Chroma
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
-from langchain_core.runnables import RunnablePassthrough, RunnableLambda
+from langchain_core.runnables import RunnablePassthrough
 from langchain.memory import ConversationBufferMemory
-
-# 🆕 Multilingual support
-from langchain_openai import ChatOpenAI as ChatTranslator
 
 # ───────────────────────────────────────────────
 # 1. Setup
@@ -49,7 +45,7 @@ vectorstore = Chroma(
     embedding_function=embeddings,
     persist_directory=str(VECTOR_DIR)
 )
-retriever = vectorstore.as_retriever(search_kwargs={"k": 5})
+retriever = vectorstore.as_retriever(search_kwargs={"k": 4})
 
 print("🧠 Checking Chroma collections…")
 try:
@@ -59,54 +55,29 @@ except Exception as e:
     print("Error listing collections:", e)
 
 # ───────────────────────────────────────────────
-# 2. LLM, Memory, Context Synthesizer, Prompt
+# 2. LLM, Memory, Prompt (unchanged mentor tone)
 # ───────────────────────────────────────────────
 llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.3)
+memory = ConversationBufferMemory(memory_key="history", input_key="question", return_messages=False)
 
-memory = ConversationBufferMemory(
-    memory_key="history",
-    input_key="question",
-    return_messages=False
-)
-
-# ─────────────── Context synthesis layer ───────────────
-def synthesize_context(docs):
-    """Fuse retrieved chunks into one coherent technical summary."""
-    joined = "\n\n".join(d.page_content for d in docs)
-    if not joined.strip():
-        return ""
-    summarizer = ChatOpenAI(model="gpt-4o-mini", temperature=0)
-    synthesis_prompt = f"""
-    Combine and integrate the following excerpts into one coherent technical summary.
-    Focus on the physics and acoustic principles without repetition or speculation.
-    Keep only factual, explanatory content — no lists, no fluff.
-    ---
-    {joined}
-    """
-    response = summarizer.invoke(synthesis_prompt)
-    return response.content.strip()
-
-# ─────────────── Conversational mentor prompt ───────────────
 prompt = ChatPromptTemplate.from_template("""
-You are **Acustica** — the digital assistant created by Giuliano Nicoletti to
-guide luthiers and acoustic engineers. You speak as a thoughtful craftsman who
-has spent decades around workbenches, instruments, and oscilloscopes.
+You are **Acustica** — the digital assistant created by Giuliano Nicoletti to guide
+luthiers and acoustic engineers. You speak as a thoughtful craftsman who has spent
+decades around workbenches, instruments, and oscilloscopes.
 
 Your role is to help the user understand one concept at a time. Be clear,
 conversational, and grounded in physics — never overwhelming, never speculative.
 If the retrieved context does not clearly define the concept, say so honestly and
-do not invent or guess beyond what the corpus provides. If the user introduces a
-new topic, connect ideas only when they are explicitly related; do not jump ahead
-or create associations that have not been mentioned.
+do not invent or guess beyond what the corpus provides.
 
-Your tone is warm, professional, and precise — like an experienced teacher in a
-quiet workshop. Offer insight through gentle guidance rather than lectures.
+Tone: warm, professional, precise — like an experienced teacher in a quiet workshop.
+Offer insight through gentle guidance rather than lectures.
 
-Style guidelines:
+Style:
 • 4–8 sentences maximum  
-• one coherent paragraph  
-• plain, natural language (no bullet lists)  
-• end with a short, relevant follow-up question that invites reflection  
+• single coherent paragraph  
+• natural technical language (no bullet lists)  
+• end with a short, relevant question inviting reflection
 
 ──────────────────────────────────────────────
 Conversation so far:
@@ -119,55 +90,39 @@ Conversation so far:
 Question: {question}
 """)
 
-# ───────────────────────────────────────────────
-# 3. Multilingual translation utilities
-# ───────────────────────────────────────────────
-translator_detect = ChatTranslator(model="gpt-4o-mini", temperature=0)
-translator_translate = ChatTranslator(model="gpt-4o-mini", temperature=0)
-
-def detect_language(text: str) -> str:
-    """Return ISO language code (e.g., en, it, fr, es, de, ja)."""
-    result = translator_detect.invoke(
-        f"Detect the language of this text and reply only with its ISO code:\n{text}"
-    )
-    return result.content.strip().lower()
-
-def translate_if_needed_to_english(text: str) -> str:
-    """Translate any language into English for retrieval alignment."""
-    lang = detect_language(text)
-    if lang.startswith("en"):
-        return text
-    translated = translator_translate.invoke(
-        f"Translate this text into clear, technical English for acoustic and lutherie contexts:\n{text}"
-    )
-    return translated.content.strip()
-
-def translate_back_if_needed(answer: str, original_text: str) -> str:
-    """Translate generated English answer back to the user's original language."""
-    lang = detect_language(original_text)
-    if lang.startswith("en"):
-        return answer
-    back = translator_translate.invoke(
-        f"Translate this into {lang}, preserving all acoustic and physical terminology precisely:\n{answer}"
-    )
-    return back.content.strip()
-
-# ─────────────── Retrieval + synthesis + LLM chain ───────────────
 chain = (
-    {
-        "context": retriever | RunnableLambda(synthesize_context),
-        "question": RunnablePassthrough(),
-        "history": lambda _: memory.load_memory_variables({}).get("history", "")
-    }
+    {"context": retriever, "question": RunnablePassthrough(), "history": lambda _: memory.load_memory_variables({}).get("history", "")}
     | prompt
     | llm
     | StrOutputParser()
 )
 
 # ───────────────────────────────────────────────
-# 4. FastAPI app
+# 3. Multilingual utilities
 # ───────────────────────────────────────────────
-app = FastAPI(title="Acustica — Conversational Reasoning API (Multilingual)")
+translator = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+
+def detect_language(text: str) -> str:
+    result = translator.invoke(f"Detect the language of this text and respond only with its ISO code:\n{text}")
+    return result.content.strip().lower()
+
+def translate_to_english_if_needed(text: str) -> tuple[str, str]:
+    lang = detect_language(text)
+    if lang.startswith("en"):
+        return text, "en"
+    translated = translator.invoke(f"Translate this text into clear, technical English:\n{text}")
+    return translated.content.strip(), lang
+
+def translate_back(answer: str, lang: str) -> str:
+    if lang.startswith("en"):
+        return answer
+    back = translator.invoke(f"Translate this text into {lang}, preserving all acoustic terminology:\n{answer}")
+    return back.content.strip()
+
+# ───────────────────────────────────────────────
+# 4. FastAPI App
+# ───────────────────────────────────────────────
+app = FastAPI(title="Acustica — Multilingual Conversational Retriever")
 
 app.add_middleware(
     CORSMiddleware,
@@ -182,17 +137,12 @@ class Question(BaseModel):
 
 @app.get("/")
 def home():
-    return {"message": "🎸 Acustica — Conversational Reasoning API (Multilingual) running!"}
+    return {"message": "🎸 Acustica — Multilingual Conversational Retriever running!"}
 
 @app.post("/ask")
 async def ask(q: Question):
-    # 🆕 Translate to English for retrieval
-    translated_question = translate_if_needed_to_english(q.question)
-
-    # Normal reasoning chain (unchanged)
-    answer = chain.invoke(translated_question)
+    translated_q, lang = translate_to_english_if_needed(q.question)
+    answer = chain.invoke(translated_q)
     memory.save_context({"question": q.question}, {"answer": answer})
-
-    # 🆕 Translate back to user language if needed
-    final_answer = translate_back_if_needed(answer, q.question)
-    return {"answer": final_answer}
+    final = translate_back(answer, lang)
+    return {"answer": final}
