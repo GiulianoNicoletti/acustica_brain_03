@@ -3,18 +3,17 @@ __import__('pysqlite3')
 sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 
 # ───────────────────────────────────────────────
-# ACUSTICA — Conversational Retriever with Context Synthesis
+# ACUSTICA — Conversational Retriever with Context Synthesis + Vision
 # Author: Giuliano Nicoletti
-# Purpose: coherent, physics-grounded reasoning from corpus
-# Multilingual version — automatic language detection and translation
 # ───────────────────────────────────────────────
 
-from fastapi import FastAPI
+from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
 from pathlib import Path
-import os
+import os, base64
+from io import BytesIO
 
 from langchain_chroma import Chroma
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
@@ -22,9 +21,6 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough, RunnableLambda
 from langchain.memory import ConversationBufferMemory
-
-# 🆕 Multilingual support
-from langchain_openai import ChatOpenAI as ChatTranslator
 
 # ───────────────────────────────────────────────
 # 1. Setup
@@ -62,14 +58,8 @@ except Exception as e:
 # 2. LLM, Memory, Context Synthesizer, Prompt
 # ───────────────────────────────────────────────
 llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.3)
+memory = ConversationBufferMemory(memory_key="history", input_key="question", return_messages=False)
 
-memory = ConversationBufferMemory(
-    memory_key="history",
-    input_key="question",
-    return_messages=False
-)
-
-# ─────────────── Context synthesis layer ───────────────
 def synthesize_context(docs):
     """Fuse retrieved chunks into one coherent technical summary."""
     joined = "\n\n".join(d.page_content for d in docs)
@@ -86,7 +76,6 @@ def synthesize_context(docs):
     response = summarizer.invoke(synthesis_prompt)
     return response.content.strip()
 
-# ─────────────── Conversational mentor prompt ───────────────
 prompt = ChatPromptTemplate.from_template("""
 You are **Acustica** — the digital assistant created by Giuliano Nicoletti to
 guide luthiers and acoustic engineers. You speak as a thoughtful craftsman who
@@ -122,18 +111,16 @@ Question: {question}
 # ───────────────────────────────────────────────
 # 3. Multilingual translation utilities
 # ───────────────────────────────────────────────
-translator_detect = ChatTranslator(model="gpt-4o-mini", temperature=0)
-translator_translate = ChatTranslator(model="gpt-4o-mini", temperature=0)
+translator_detect = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+translator_translate = ChatOpenAI(model="gpt-4o-mini", temperature=0)
 
 def detect_language(text: str) -> str:
-    """Return ISO language code (e.g., en, it, fr, es, de, ja)."""
     result = translator_detect.invoke(
         f"Detect the language of this text and reply only with its ISO code:\n{text}"
     )
     return result.content.strip().lower()
 
 def translate_if_needed_to_english(text: str) -> str:
-    """Translate any language into English for retrieval alignment."""
     lang = detect_language(text)
     if lang.startswith("en"):
         return text
@@ -143,7 +130,6 @@ def translate_if_needed_to_english(text: str) -> str:
     return translated.content.strip()
 
 def translate_back_if_needed(answer: str, original_text: str) -> str:
-    """Translate generated English answer back to the user's original language."""
     lang = detect_language(original_text)
     if lang.startswith("en"):
         return answer
@@ -165,9 +151,9 @@ chain = (
 )
 
 # ───────────────────────────────────────────────
-# 4. FastAPI app
+# 4. FastAPI app (text endpoint)
 # ───────────────────────────────────────────────
-app = FastAPI(title="Acustica — Conversational Reasoning API (Multilingual)")
+app = FastAPI(title="Acustica — Conversational Reasoning API (Multilingual + Vision)")
 
 app.add_middleware(
     CORSMiddleware,
@@ -182,17 +168,46 @@ class Question(BaseModel):
 
 @app.get("/")
 def home():
-    return {"message": "🎸 Acustica — Conversational Reasoning API (Multilingual) running!"}
+    return {"message": "🎸 Acustica — Conversational Reasoning API (Multilingual + Vision) running!"}
 
 @app.post("/ask")
 async def ask(q: Question):
-    # 🆕 Translate to English for retrieval
     translated_question = translate_if_needed_to_english(q.question)
-
-    # Normal reasoning chain (unchanged)
     answer = chain.invoke(translated_question)
     memory.save_context({"question": q.question}, {"answer": answer})
-
-    # 🆕 Translate back to user language if needed
     final_answer = translate_back_if_needed(answer, q.question)
     return {"answer": final_answer}
+
+# ───────────────────────────────────────────────
+# 5. Image analysis endpoint (Scenario A)
+# ───────────────────────────────────────────────
+@app.post("/analyze_image")
+async def analyze_image(file: UploadFile = File(...), question: str = "Describe what you see."):
+    """
+    Accepts an uploaded image and an optional question,
+    then uses GPT-4o vision to interpret the image contextually.
+    """
+    contents = await file.read()
+    image_base64 = base64.b64encode(contents).decode("utf-8")
+    image_data_url = f"data:{file.content_type};base64,{image_base64}"
+
+    vision_prompt = [
+        {
+            "role": "system",
+            "content": (
+                "You are **Acustica**, the visual acoustic assistant by Giuliano Nicoletti. "
+                "Interpret uploaded images such as frequency-response graphs, tap-test spectra, "
+                "or guitar structures. Be factual, concise, and physically accurate. "
+                "Explain what can be inferred acoustically (resonances, modes, materials, etc.) "
+                "without guessing beyond visible evidence."
+            )
+        },
+        {"role": "user", "content": [
+            {"type": "text", "text": question},
+            {"type": "image_url", "image_url": image_data_url}
+        ]}
+    ]
+
+    vision_llm = ChatOpenAI(model="gpt-4o", temperature=0.2)
+    result = vision_llm.invoke(vision_prompt)
+    return {"answer": result.content.strip()}
