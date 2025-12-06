@@ -3,8 +3,9 @@ __import__('pysqlite3')
 sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 
 # ───────────────────────────────────────────────
-# ACUSTICA — FastAPI Conversational Retriever
-# Mentor style + short-term memory
+# ACUSTICA — Conversational Retriever with Context Synthesis
+# Author: Giuliano Nicoletti
+# Purpose: coherent, physics-grounded reasoning from corpus
 # ───────────────────────────────────────────────
 
 from fastapi import FastAPI
@@ -18,7 +19,7 @@ from langchain_chroma import Chroma
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
-from langchain_core.runnables import RunnablePassthrough
+from langchain_core.runnables import RunnablePassthrough, RunnableLambda
 from langchain.memory import ConversationBufferMemory
 
 # ───────────────────────────────────────────────
@@ -44,7 +45,7 @@ vectorstore = Chroma(
     embedding_function=embeddings,
     persist_directory=str(VECTOR_DIR)
 )
-retriever = vectorstore.as_retriever(search_kwargs={"k": 4})
+retriever = vectorstore.as_retriever(search_kwargs={"k": 5})
 
 print("🧠 Checking Chroma collections…")
 try:
@@ -54,17 +55,34 @@ except Exception as e:
     print("Error listing collections:", e)
 
 # ───────────────────────────────────────────────
-# 2. Model, Memory, and Prompt
+# 2. LLM, Memory, Context Synthesizer, Prompt
 # ───────────────────────────────────────────────
 llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.3)
 
-# short-term conversational memory
 memory = ConversationBufferMemory(
     memory_key="history",
     input_key="question",
     return_messages=False
 )
 
+# ─────────────── Context synthesis layer ───────────────
+def synthesize_context(docs):
+    """Fuse retrieved chunks into one coherent technical summary."""
+    joined = "\n\n".join(d.page_content for d in docs)
+    if not joined.strip():
+        return ""
+    summarizer = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+    synthesis_prompt = f"""
+    Combine and integrate the following excerpts into one coherent technical summary.
+    Focus on the physics and acoustic principles without repetition or speculation.
+    Keep only factual, explanatory content — no lists, no fluff.
+    ---
+    {joined}
+    """
+    response = summarizer.invoke(synthesis_prompt)
+    return response.content.strip()
+
+# ─────────────── Conversational mentor prompt ───────────────
 prompt = ChatPromptTemplate.from_template("""
 You are **Acustica** — the digital assistant created by Giuliano Nicoletti to guide
 luthiers and acoustic engineers. You speak like a person who has spent decades
@@ -81,7 +99,7 @@ alive, but always stay accurate and humble — never mystical or verbose.
 Your answers should sound natural, like a mentor in a workshop:
 • 4–10 lines maximum
 • one coherent paragraph (no bullet lists)
-• use warm but professional tone
+• warm, professional tone
 
 ──────────────────────────────────────────────
 Conversation so far:
@@ -94,10 +112,10 @@ Conversation so far:
 Question: {question}
 """)
 
-# retrieval + LLM chain with memory context
+# ─────────────── Retrieval + synthesis + LLM chain ───────────────
 chain = (
     {
-        "context": retriever | (lambda docs: "\n\n".join(d.page_content for d in docs)),
+        "context": retriever | RunnableLambda(synthesize_context),
         "question": RunnablePassthrough(),
         "history": lambda _: memory.load_memory_variables({}).get("history", "")
     }
@@ -107,9 +125,9 @@ chain = (
 )
 
 # ───────────────────────────────────────────────
-# 3. FastAPI App
+# 3. FastAPI app
 # ───────────────────────────────────────────────
-app = FastAPI(title="Acustica Conversational API")
+app = FastAPI(title="Acustica — Conversational Reasoning API")
 
 app.add_middleware(
     CORSMiddleware,
@@ -124,7 +142,7 @@ class Question(BaseModel):
 
 @app.get("/")
 def home():
-    return {"message": "🎸 Acustica Conversational API is running!"}
+    return {"message": "🎸 Acustica — Conversational Reasoning API running!"}
 
 @app.post("/ask")
 async def ask(q: Question):
