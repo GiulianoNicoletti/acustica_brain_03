@@ -3,16 +3,17 @@ __import__('pysqlite3')
 sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 
 # ───────────────────────────────────────────────
-# ACUSTICA — Conversational + Visual Reasoning API
+# ACUSTICA — Conversational Retriever with Context Synthesis
 # Author: Giuliano Nicoletti
+# Purpose: coherent, physics-grounded reasoning from corpus
+# Multilingual version — automatic language detection and translation
 # ───────────────────────────────────────────────
 
-from fastapi import FastAPI, File, UploadFile
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
 from pathlib import Path
-import base64
 import os
 
 from langchain_chroma import Chroma
@@ -21,6 +22,9 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough, RunnableLambda
 from langchain.memory import ConversationBufferMemory
+
+# 🆕 Multilingual support
+from langchain_openai import ChatOpenAI as ChatTranslator
 
 # ───────────────────────────────────────────────
 # 1. Setup
@@ -55,7 +59,7 @@ except Exception as e:
     print("Error listing collections:", e)
 
 # ───────────────────────────────────────────────
-# 2. LLM, Memory, Context Synthesis, Prompt
+# 2. LLM, Memory, Context Synthesizer, Prompt
 # ───────────────────────────────────────────────
 llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.3)
 
@@ -65,6 +69,7 @@ memory = ConversationBufferMemory(
     return_messages=False
 )
 
+# ─────────────── Context synthesis layer ───────────────
 def synthesize_context(docs):
     """Fuse retrieved chunks into one coherent technical summary."""
     joined = "\n\n".join(d.page_content for d in docs)
@@ -73,7 +78,7 @@ def synthesize_context(docs):
     summarizer = ChatOpenAI(model="gpt-4o-mini", temperature=0)
     synthesis_prompt = f"""
     Combine and integrate the following excerpts into one coherent technical summary.
-    Focus on physics and acoustic principles without repetition or speculation.
+    Focus on the physics and acoustic principles without repetition or speculation.
     Keep only factual, explanatory content — no lists, no fluff.
     ---
     {joined}
@@ -81,6 +86,7 @@ def synthesize_context(docs):
     response = summarizer.invoke(synthesis_prompt)
     return response.content.strip()
 
+# ─────────────── Conversational mentor prompt ───────────────
 prompt = ChatPromptTemplate.from_template("""
 You are **Acustica** — the digital assistant created by Giuliano Nicoletti to
 guide luthiers and acoustic engineers. You speak as a thoughtful craftsman who
@@ -113,6 +119,40 @@ Conversation so far:
 Question: {question}
 """)
 
+# ───────────────────────────────────────────────
+# 3. Multilingual translation utilities
+# ───────────────────────────────────────────────
+translator_detect = ChatTranslator(model="gpt-4o-mini", temperature=0)
+translator_translate = ChatTranslator(model="gpt-4o-mini", temperature=0)
+
+def detect_language(text: str) -> str:
+    """Return ISO language code (e.g., en, it, fr, es, de, ja)."""
+    result = translator_detect.invoke(
+        f"Detect the language of this text and reply only with its ISO code:\n{text}"
+    )
+    return result.content.strip().lower()
+
+def translate_if_needed_to_english(text: str) -> str:
+    """Translate any language into English for retrieval alignment."""
+    lang = detect_language(text)
+    if lang.startswith("en"):
+        return text
+    translated = translator_translate.invoke(
+        f"Translate this text into clear, technical English for acoustic and lutherie contexts:\n{text}"
+    )
+    return translated.content.strip()
+
+def translate_back_if_needed(answer: str, original_text: str) -> str:
+    """Translate generated English answer back to the user's original language."""
+    lang = detect_language(original_text)
+    if lang.startswith("en"):
+        return answer
+    back = translator_translate.invoke(
+        f"Translate this into {lang}, preserving all acoustic and physical terminology precisely:\n{answer}"
+    )
+    return back.content.strip()
+
+# ─────────────── Retrieval + synthesis + LLM chain ───────────────
 chain = (
     {
         "context": retriever | RunnableLambda(synthesize_context),
@@ -125,9 +165,9 @@ chain = (
 )
 
 # ───────────────────────────────────────────────
-# 3. FastAPI app
+# 4. FastAPI app
 # ───────────────────────────────────────────────
-app = FastAPI(title="Acustica — Conversational + Visual Reasoning API")
+app = FastAPI(title="Acustica — Conversational Reasoning API (Multilingual)")
 
 app.add_middleware(
     CORSMiddleware,
@@ -142,48 +182,17 @@ class Question(BaseModel):
 
 @app.get("/")
 def home():
-    return {"message": "🎸 Acustica — Conversational + Visual Reasoning API running!"}
+    return {"message": "🎸 Acustica — Conversational Reasoning API (Multilingual) running!"}
 
 @app.post("/ask")
 async def ask(q: Question):
-    answer = chain.invoke(q.question)
+    # 🆕 Translate to English for retrieval
+    translated_question = translate_if_needed_to_english(q.question)
+
+    # Normal reasoning chain (unchanged)
+    answer = chain.invoke(translated_question)
     memory.save_context({"question": q.question}, {"answer": answer})
-    return {"answer": answer}
 
-# ───────────────────────────────────────────────
-# 4. Image Analysis Endpoint — Context-Aware
-# ───────────────────────────────────────────────
-@app.post("/analyze_image")
-async def analyze_image(
-    file: UploadFile = File(...),
-    question: str = "Describe the guitar frequency response shown."
-):
-    contents = await file.read()
-    image_base64 = base64.b64encode(contents).decode("utf-8")
-    image_data_url = f"data:{file.content_type};base64,{image_base64}"
-
-    domain_context = (
-        "You are Acustica, Giuliano Nicoletti’s assistant for guitar acoustics. "
-        "You interpret frequency-response graphs of acoustic guitars, not speakers. "
-        "Assume the plot shows SPL (dB) vs frequency (Hz). "
-        "Identify peaks corresponding to the air mode T(1,1)₁, the top monopole T(1,1)₂, "
-        "and the back monopole T(1,1)₃ when visible. "
-        "Estimate their frequencies, comment on coupling and tonal implications "
-        "such as bass strength, resonance balance, and damping behaviour. "
-        "Be concise, factual, and avoid speculation."
-    )
-
-    vision_prompt = [
-        {"role": "system", "content": domain_context},
-        {
-            "role": "user",
-            "content": [
-                {"type": "text", "text": question},
-                {"type": "image_url", "image_url": {"url": image_data_url}},
-            ],
-        },
-    ]
-
-    vision_llm = ChatOpenAI(model="gpt-4o", temperature=0.2)
-    result = vision_llm.invoke(vision_prompt)
-    return {"answer": result.content.strip()}
+    # 🆕 Translate back to user language if needed
+    final_answer = translate_back_if_needed(answer, q.question)
+    return {"answer": final_answer}
