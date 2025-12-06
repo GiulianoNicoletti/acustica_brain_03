@@ -3,12 +3,9 @@ __import__('pysqlite3')
 sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 
 # ───────────────────────────────────────────────
-# ACUSTICA — Conversational + Image Reasoning API
-# Author: Giuliano Nicoletti
-# Purpose: physics-grounded corpus retrieval + spectrum interpretation
+# ACUSTICA — Conversational + Image+Comment Reasoning API
 # ───────────────────────────────────────────────
-
-from fastapi import FastAPI, File, UploadFile
+from fastapi import FastAPI, File, UploadFile, Form
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
@@ -29,11 +26,6 @@ BASE_DIR = Path(__file__).resolve().parent
 VECTOR_DIR = BASE_DIR / "vectorstore"
 
 print("VECTORSTORE PATH:", VECTOR_DIR)
-if VECTOR_DIR.exists():
-    print("VECTORSTORE CONTENTS:", os.listdir(VECTOR_DIR))
-else:
-    print("VECTORSTORE DIRECTORY MISSING!")
-
 load_dotenv()
 api_key = os.getenv("OPENAI_API_KEY")
 if not api_key:
@@ -58,35 +50,21 @@ except Exception as e:
 # 2. LLM, memory, synthesis
 # ───────────────────────────────────────────────
 llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.3)
-
-memory = ConversationBufferMemory(
-    memory_key="history",
-    input_key="question",
-    return_messages=False
-)
+memory = ConversationBufferMemory(memory_key="history", input_key="question", return_messages=False)
 
 def synthesize_context(docs):
     joined = "\n\n".join(d.page_content for d in docs)
-    if not joined.strip():
-        return ""
+    if not joined.strip(): return ""
     summarizer = ChatOpenAI(model="gpt-4o-mini", temperature=0)
-    synthesis_prompt = f"""
-    Integrate the following excerpts into one coherent technical summary,
-    focused on physics and acoustic principles relevant to guitar design.
-    ---
-    {joined}
-    """
-    response = summarizer.invoke(synthesis_prompt)
-    return response.content.strip()
+    synthesis_prompt = f"Integrate the following excerpts into one coherent technical summary:\n{joined}"
+    return summarizer.invoke(synthesis_prompt).content.strip()
 
 # ───────────────────────────────────────────────
-# 3. Prompt template for normal questions
+# 3. Prompt for conversational reasoning
 # ───────────────────────────────────────────────
 prompt = ChatPromptTemplate.from_template("""
-You are **Acustica**, the assistant created by Giuliano Nicoletti
-to guide luthiers and acoustic engineers. Speak as a thoughtful craftsman,
-grounded in physics. Be clear, factual, and warm.
-
+You are **Acustica**, created by Giuliano Nicoletti to guide luthiers and acoustic engineers.
+Speak as a craftsman grounded in physics — clear, factual, and warm.
 ──────────────────────────────────────────────
 Conversation so far:
 {history}
@@ -94,7 +72,6 @@ Conversation so far:
 <context>
 {context}
 </context>
-
 Question: {question}
 """)
 
@@ -104,9 +81,7 @@ chain = (
         "question": RunnablePassthrough(),
         "history": lambda _: memory.load_memory_variables({}).get("history", "")
     }
-    | prompt
-    | llm
-    | StrOutputParser()
+    | prompt | llm | StrOutputParser()
 )
 
 # ───────────────────────────────────────────────
@@ -133,7 +108,7 @@ def translate_back(answer:str, original:str)->str:
 # ───────────────────────────────────────────────
 # 5. FastAPI app
 # ───────────────────────────────────────────────
-app = FastAPI(title="Acustica — Conversational + Image Reasoning API")
+app = FastAPI(title="Acustica — Conversational + Image+Comment API")
 
 app.add_middleware(
     CORSMiddleware,
@@ -146,7 +121,7 @@ class Question(BaseModel):
 
 @app.get("/")
 def home():
-    return {"message": "🎸 Acustica — Conversational + Image Reasoning API running!"}
+    return {"message": "🎸 Acustica — Conversational + Image+Comment API running!"}
 
 @app.post("/ask")
 async def ask(q: Question):
@@ -156,23 +131,24 @@ async def ask(q: Question):
     return {"answer": translate_back(answer, q.question)}
 
 # ───────────────────────────────────────────────
-# 6. Spectrum image analysis
+# 6. Spectrum + Comment analysis
 # ───────────────────────────────────────────────
 @app.post("/ask_image")
-async def ask_image(file: UploadFile = File(...)):
-    """Analyze uploaded spectrum images and interpret using corpus context."""
+async def ask_image(
+    file: UploadFile = File(...),
+    comment: str = Form(None)
+):
+    """Analyze uploaded spectrum images, optionally using user comment."""
     try:
-        # Read and encode the uploaded image
         content = await file.read()
         b64 = base64.b64encode(content).decode("utf-8")
         image_data = f"data:image/jpeg;base64,{b64}"
 
-        # Step 1 – visual summary
         vision = ChatOpenAI(model="gpt-4o", temperature=0)
         summary_prompt = [
             {"role": "user", "content": [
                 {"type": "text",
-                 "text": "Describe this graph of an acoustic guitar spectrum in concise technical English. Extract key peaks (Hz), dips, and general response trends."},
+                 "text": "Describe this frequency-response graph for an acoustic guitar: extract main peaks (Hz), dips, overall slope, and tonal implications."},
                 {"type": "image_url", "image_url": {"url": image_data}}
             ]}
         ]
@@ -180,29 +156,26 @@ async def ask_image(file: UploadFile = File(...)):
         image_summary = vision_result.content.strip()
         print("🖼️ Image summary:", image_summary[:200])
 
-        # Step 2 – retrieve relevant context
         docs = retriever.get_relevant_documents(image_summary)
         context = synthesize_context(docs)
 
-        # Step 3 – interpret the curve as a luthier
         interpret = ChatOpenAI(model="gpt-4o-mini", temperature=0.3)
         interpret_prompt = f"""
-        You are Acustica, analyzing the acoustic response of a guitar.
-        Use the retrieved context to interpret this curve in terms of
-        resonances (T(1,1)₁, T(1,1)₂, etc.), coupling effects, and tonal implications.
-        ---
-        Curve description:
+        You are Acustica, analyzing an acoustic-guitar frequency-response spectrum.
+
+        User comment (optional): {comment or "—"}
+        Image description:
         {image_summary}
-        ---
+
         Context from corpus:
         {context}
-        ---
-        Provide one coherent technical interpretation (5-8 sentences max).
+
+        Provide one concise, physics-based interpretation (5-8 sentences) that
+        explains the resonant behavior, identifies likely T(1,1) modes,
+        and relates tonal balance or projection.
         """
         final = interpret.invoke(interpret_prompt)
-        answer = final.content.strip()
-
-        return {"analysis": answer}
+        return {"analysis": final.content.strip()}
 
     except Exception as e:
         print("❌ Image analysis error:", e)
