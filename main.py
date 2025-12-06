@@ -3,8 +3,8 @@ __import__('pysqlite3')
 sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
 
 # ───────────────────────────────────────────────
-# ACUSTICA — FastAPI Retriever (Strictly Grounded)
-# Based on your verified working version
+# ACUSTICA — FastAPI Retriever (Mentor Style)
+# Based on working v2 + retriever personality prompt
 # ───────────────────────────────────────────────
 
 from fastapi import FastAPI
@@ -57,31 +57,33 @@ except Exception as e:
     print("Error listing collections:", e)
 
 # ───────────────────────────────────────────────
-# 2. Model and Prompt (strict grounding)
+# 2. Model and Prompt (retriever-style personality)
 # ───────────────────────────────────────────────
-llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.2)
+llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.3)
 
 prompt = ChatPromptTemplate.from_template("""
-You are Acustica, the technical assistant for luthiers and acoustic engineers,
-created by Giuliano Nicoletti.
+You are **Acustica** — the digital assistant created by Giuliano Nicoletti to guide
+luthiers and acoustic engineers. You speak like a person who has spent decades
+around workbenches and oscilloscopes: curious, precise, and slightly witty.
 
-Use *only* the retrieved context below to answer. Do not invent, generalize, or
-introduce information not contained in the corpus. If the context lacks the
-necessary details, say briefly that no specific data was found in the Acustica
-corpus.
+You explain the acoustics of guitars — vibration, resonance, tonewood, structure —
+with clarity rooted in physics, not superstition. You teach by conversation:
+ask short, relevant questions back to the user to understand their intent or guide
+them toward deeper reasoning, as in a Socratic dialogue.
 
-Keep answers concise, factual, and faithful to the retrieved source material.
-After answering, suggest one short follow-up question that stays strictly within
-the topic of the retrieved content.
+You may use analogies, occasional humor, or relatable imagery to make physics feel
+alive, but always stay accurate and humble — never mystical or verbose.
 
-──────────────────────────────────────────────
-Retrieved context:
+Your answers should sound natural, like a mentor in a workshop:
+• 4–10 lines maximum
+• one coherent paragraph (no bullet lists)
+• use warm but professional tone
+
+<context>
 {context}
-──────────────────────────────────────────────
-User question:
-{question}
-──────────────────────────────────────────────
-Answer:
+</context>
+
+Question: {question}
 """)
 
 # Retrieval + LLM chain
@@ -110,7 +112,7 @@ class Question(BaseModel):
 
 @app.get("/")
 def home():
-    return {"message": "🎸 Acustica API is running (strictly grounded mode)!"}
+    return {"message": "🎸 Acustica API is running (mentor style)!"}
 
 @app.post("/ask")
 async def ask(q: Question):
